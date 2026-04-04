@@ -8,231 +8,443 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#090c10;--sf:#0e1318;--sf2:#141b22;--br:#1e2a35;--br2:#243040;--ac:#00c8ff;--ac2:#ff4d6d;--gd:#f5c542;--gn:#22d46b;--mt:#4a6070;--tx:#c8dae8;--td:#6a8090;--tb:#eaf4fb}
-html,body{background:var(--bg);color:var(--tx);font-family:'Barlow Condensed',sans-serif;min-height:100vh}
-body::before{content:'';position:fixed;inset:0;z-index:999;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.06) 2px,rgba(0,0,0,.06) 4px)}
-header{background:var(--sf);border-bottom:1px solid var(--br);padding:0 20px;display:flex;align-items:center;gap:14px;height:54px;position:sticky;top:0;z-index:100}
+:root{
+  --bg:#090c10;--sf:#0e1318;--sf2:#141b22;
+  --br:#1e2a35;--br2:#243040;
+  --ac:#00c8ff;--ac2:#ff4d6d;--gd:#f5c542;--gn:#22d46b;
+  --mt:#4a6070;--tx:#c8dae8;--td:#6a8090;--tb:#eaf4fb;
+  --team-h:#00c8ff;--team-a:#ff4d6d;
+}
+html,body{background:var(--bg);color:var(--tx);font-family:"Barlow Condensed",sans-serif;min-height:100vh}
+body::before{content:"";position:fixed;inset:0;z-index:999;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.055) 2px,rgba(0,0,0,.055) 4px)}
+
+/* ─ Skip link ─ */
+.skip{position:absolute;top:-100%;left:8px;z-index:1100;background:var(--ac);color:var(--bg);
+  padding:6px 16px;font-size:13px;font-weight:700;border-radius:0 0 4px 4px;text-decoration:none}
+.skip:focus{top:0}
+
+/* ─ Header ─ */
+header{background:var(--sf);border-bottom:1px solid var(--br);padding:0 20px;
+  display:flex;align-items:center;gap:14px;height:54px;position:sticky;top:0;z-index:100}
 .logo{font-size:19px;font-weight:900;letter-spacing:.08em;color:var(--tb);text-transform:uppercase}
 .logo span{color:var(--ac)}
-.pill{display:flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--br2);font-family:'JetBrains Mono',monospace}
-.pill.idle{color:var(--mt)}.pill.live{color:var(--gn);border-color:var(--gn)}.pill.err{color:var(--ac2);border-color:var(--ac2)}.pill.loading{color:var(--gd);border-color:var(--gd)}
-.dot{width:6px;height:6px;border-radius:50%;background:currentColor}.pill.live .dot{animation:blink 1s ease-in-out infinite}
+.pill{display:flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;
+  font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  border:1px solid var(--br2);font-family:"JetBrains Mono",monospace}
+.pill.idle{color:var(--mt)}.pill.live{color:var(--gn);border-color:var(--gn)}
+.pill.err{color:var(--ac2);border-color:var(--ac2)}.pill.loading{color:var(--gd);border-color:var(--gd)}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.pill.live .dot{animation:blink 1s ease-in-out infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
-.hr{margin-left:auto;display:flex;align-items:center;gap:10px}
-.upd{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--mt)}
-.cfg{background:var(--sf2);border-bottom:1px solid var(--br);padding:10px 20px;display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.hdr-r{margin-left:auto;display:flex;align-items:center;gap:10px}
+.upd{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--mt)}
+
+/* ─ Config bar ─ */
+.cfg{background:var(--sf2);border-bottom:1px solid var(--br);padding:10px 20px;
+  display:flex;align-items:center;flex-wrap:wrap;gap:8px}
 .cfg label{font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--mt);text-transform:uppercase}
-.cfg input,.cfg select{background:var(--bg);border:1px solid var(--br2);color:var(--tb);font-family:'JetBrains Mono',monospace;font-size:12px;padding:6px 10px;border-radius:4px;outline:none;transition:border-color .15s}
-.cfg input:focus,.cfg select:focus{border-color:var(--ac)}
-#tok{width:190px;letter-spacing:.12em}#msel{width:340px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600}#iv{width:72px}
-.btn{padding:7px 16px;border:none;border-radius:4px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;transition:all .15s}
+.cfg input,.cfg select{background:var(--bg);border:1px solid var(--br2);color:var(--tb);
+  font-family:"JetBrains Mono",monospace;font-size:12px;padding:6px 10px;
+  border-radius:4px;outline:none;transition:border-color .15s}
+.cfg input:focus,.cfg select:focus{border-color:var(--ac);outline:2px solid var(--ac);outline-offset:1px}
+#tok{width:190px;letter-spacing:.12em}
+#msel{width:340px;font-family:"Barlow Condensed",sans-serif;font-size:13px;font-weight:600}
+#iv{width:72px}
+.btn{padding:7px 16px;border:none;border-radius:4px;cursor:pointer;
+  font-family:"Barlow Condensed",sans-serif;font-size:12px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;transition:all .15s}
+.btn:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
 .bs{background:var(--ac);color:var(--bg)}.bs:hover{background:#33d5ff}
 .bp{background:transparent;color:var(--ac2);border:1px solid var(--ac2)}.bp:hover{background:var(--ac2);color:#fff}
 .bx{background:transparent;color:var(--gd);border:1px solid var(--gd)}.bx:hover{background:var(--gd);color:var(--bg)}
 .btn:disabled{opacity:.4;cursor:not-allowed}
-.dv{width:1px;height:26px;background:var(--br2)}
-#cw{background:#140a00;border-bottom:1px solid #3a2000;padding:6px 20px;font-size:11px;color:var(--gd);display:flex;align-items:center;gap:8px}
-#cw code{background:#2a1500;padding:2px 6px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:10px}
+.dv{width:1px;height:26px;background:var(--br2);flex-shrink:0}
+#cw{background:#140a00;border-bottom:1px solid #3a2000;padding:6px 20px;font-size:11px;color:var(--gd);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#cw code{background:#2a1500;padding:2px 6px;border-radius:3px;font-family:"JetBrains Mono",monospace;font-size:10px}
+
+/* ─ Dashboard layout ─ */
 .dash{padding:16px 20px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
-/* Score header */
-.sh{grid-column:1/-1;background:var(--sf);border:1px solid var(--br);border-radius:6px;padding:18px 24px;display:flex;align-items:center;justify-content:space-between}
-.st{min-width:180px}
-.sn{font-size:26px;font-weight:900;letter-spacing:.05em;color:var(--tb);text-transform:uppercase;line-height:1}
-.sn.aw{text-align:right}
-.sm{font-size:11px;font-weight:600;color:var(--mt);letter-spacing:.1em;text-transform:uppercase;margin-top:3px}
-.sm.aw{text-align:right}
-.sc{display:flex;flex-direction:column;align-items:center;gap:8px}
-.ss{display:flex;align-items:center;gap:12px}
-.sv{font-size:60px;font-weight:900;line-height:1;font-family:'JetBrains Mono',monospace;color:var(--tb)}
-.sv.ld{color:var(--ac)}
-.sd{font-size:28px;color:var(--mt);font-weight:300}
-.chips{display:flex;gap:5px}
-.chip{background:var(--sf2);border:1px solid var(--br);border-radius:3px;padding:2px 7px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--td)}
+
+/* ─ Score header ─ */
+.sh{grid-column:1/-1;border:1px solid var(--br);border-radius:6px;overflow:hidden}
+.sh-teams{display:flex;align-items:stretch;min-height:110px}
+.sh-team{flex:1;display:flex;align-items:center;gap:14px;padding:16px 20px;position:relative;overflow:hidden}
+.sh-team::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(0,0,0,0) 60%,rgba(0,0,0,.25));pointer-events:none}
+.sh-team.home{border-right:1px solid rgba(255,255,255,.08)}
+.sh-team.away{flex-direction:row-reverse}
+.team-logo{width:52px;height:52px;object-fit:contain;flex-shrink:0;filter:drop-shadow(0 2px 6px rgba(0,0,0,.4))}
+.team-logo-fallback{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:900;flex-shrink:0;background:rgba(255,255,255,.1)}
+.team-info{flex:1;min-width:0}
+.team-name-big{font-size:22px;font-weight:900;letter-spacing:.05em;color:#fff;text-transform:uppercase;line-height:1.1}
+.sh-team.away .team-info{text-align:right}
+.sets-won-lbl{font-size:9px;font-weight:700;letter-spacing:.15em;color:rgba(255,255,255,.6);text-transform:uppercase;margin-top:4px}
+.sets-won-val{font-size:30px;font-weight:900;font-family:"JetBrains Mono",monospace;color:#fff;line-height:1}
+.sh-center{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:10px 20px;background:var(--sf);border-left:1px solid var(--br);border-right:1px solid var(--br);
+  min-width:180px;flex-shrink:0;gap:8px}
+.set-chips{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
+.chip{background:var(--sf2);border:1px solid var(--br);border-radius:3px;
+  padding:2px 7px;font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--td)}
 .chip .w{color:var(--gn);font-weight:700}
-.inds{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
-.ind{padding:2px 9px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;border:1px solid}
-.ih{color:var(--ac);border-color:var(--ac);background:rgba(0,200,255,.07)}
-.ia{color:var(--ac2);border-color:var(--ac2);background:rgba(255,77,109,.07)}
+.inds{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
+.ind{padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;border:1px solid}
+.ih{color:var(--team-h);border-color:var(--team-h);background:rgba(0,200,255,.07)}
+.ia{color:var(--team-a);border-color:var(--team-a);background:rgba(255,77,109,.07)}
 .ib{color:var(--gn);border-color:var(--gn);background:rgba(34,212,107,.07)}
 .im{color:#ff9f00;border-color:#ff9f00;background:rgba(255,159,0,.1)}
 .it{color:var(--gd);border-color:var(--gd);background:rgba(245,197,66,.07)}
 .is{color:var(--mt);border-color:var(--br2)}
-/* Stat cards */
+
+/* ─ Stat cards ─ */
 .cds{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 .cd{background:var(--sf);border:1px solid var(--br);border-radius:6px;padding:12px 14px}
 .cl{font-size:9px;font-weight:700;color:var(--mt);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
 .cb{display:flex;justify-content:space-between;align-items:flex-end}
-.cv{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:var(--tb)}
-.cv.h{color:var(--ac)}.cv.a{color:var(--ac2)}
+.cv{font-family:"JetBrains Mono",monospace;font-size:20px;font-weight:700;color:var(--tb)}
+.cv.h{color:var(--team-h)}.cv.a{color:var(--team-a)}
 .csep{font-size:14px;color:var(--mt)}
-.cs{font-size:10px;color:var(--mt);margin-top:2px;font-family:'JetBrains Mono',monospace}
-.lu{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--tb);letter-spacing:.08em}
-/* Court grid */
+.cs{font-size:10px;color:var(--mt);margin-top:2px;font-family:"JetBrains Mono",monospace}
+.lu{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--tb);letter-spacing:.06em}
+
+/* ─ Team stats bar ─ */
+.teamstats-row{grid-column:1/-1;display:grid;grid-template-columns:1fr auto 1fr;gap:0;
+  background:var(--sf);border:1px solid var(--br);border-radius:6px;overflow:hidden}
+.ts-side{padding:12px 18px;display:flex;flex-direction:column;gap:6px}
+.ts-side.home-side{border-right:1px solid var(--br)}
+.ts-side.away-side{text-align:right}
+.ts-header{font-size:11px;font-weight:700;color:var(--mt);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+.ts-bars{display:flex;flex-direction:column;gap:5px}
+.ts-stat{display:flex;align-items:center;gap:8px}
+.ts-side.away-side .ts-stat{flex-direction:row-reverse}
+.ts-lbl{font-size:10px;color:var(--td);min-width:60px;letter-spacing:.06em;text-transform:uppercase}
+.ts-side.away-side .ts-lbl{text-align:right}
+.ts-bar-wrap{flex:1;height:6px;background:var(--br2);border-radius:3px;overflow:hidden;position:relative}
+.ts-bar{height:100%;border-radius:3px;transition:width .4s ease;min-width:2px}
+.ts-val{font-family:"JetBrains Mono",monospace;font-size:12px;font-weight:700;min-width:28px}
+.ts-center{display:flex;align-items:center;justify-content:center;padding:0 20px;flex-direction:column;gap:4px;border-left:1px solid var(--br)}
+.ts-center-lbl{font-size:9px;color:var(--mt);letter-spacing:.12em;text-transform:uppercase}
+.ts-center-val{font-size:13px;font-weight:700;color:var(--tb);font-family:"JetBrains Mono",monospace}
+
+/* ─ Court grid ─ */
 .court-row{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .court-panel{background:var(--sf);border:1px solid var(--br);border-radius:6px;overflow:hidden}
-.court-hdr{padding:9px 14px;background:var(--sf2);border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between}
+.court-hdr{padding:9px 14px;background:var(--sf2);border-bottom:1px solid var(--br);
+  display:flex;align-items:center;justify-content:space-between}
 .court-title{font-size:12px;font-weight:900;color:var(--tb);letter-spacing:.08em;text-transform:uppercase}
-.court-sub{font-size:10px;color:var(--mt);letter-spacing:.1em;text-transform:uppercase}
-.court-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:10px}
-.court-zone{background:var(--sf2);border:1px solid var(--br);border-radius:5px;padding:8px 10px;position:relative;min-height:64px}
-.court-zone.on-court{border-color:var(--gn);background:rgba(34,212,107,.06)}
-.court-zone.serving{border-color:var(--gd);background:rgba(245,197,66,.08)}
-.court-zone.libero-zone{border-color:var(--ac);background:rgba(0,200,255,.06)}
-.court-zone.empty{opacity:.35}
-.zone-num{font-size:9px;font-weight:700;color:var(--mt);letter-spacing:.1em;position:absolute;top:5px;right:7px}
-.zone-jersey{font-size:18px;font-weight:900;font-family:'JetBrains Mono',monospace;color:var(--tb);line-height:1}
-.zone-name{font-size:11px;font-weight:600;color:var(--td);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.zone-stat{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--ac);margin-top:3px}
-.zone-lib-badge{display:inline-block;background:var(--ac);color:var(--bg);font-size:8px;font-weight:700;padding:1px 4px;border-radius:2px;margin-left:4px;vertical-align:middle}
-.zone-serve-badge{display:inline-block;background:var(--gd);color:var(--bg);font-size:8px;font-weight:700;padding:1px 4px;border-radius:2px;margin-left:4px;vertical-align:middle}
-/* Player tables */
+.court-sub{font-size:9px;color:var(--mt);letter-spacing:.1em;text-transform:uppercase}
+.court-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;padding:8px}
+.court-zone{background:var(--sf2);border:1px solid var(--br);border-radius:4px;
+  padding:7px 9px;position:relative;min-height:60px;transition:background .2s,border-color .2s}
+.court-zone.on-court{border-color:var(--gn);background:rgba(34,212,107,.05)}
+.court-zone.serving{border-color:var(--gd);background:rgba(245,197,66,.07)}
+.court-zone.lib-zone{border-color:var(--ac);background:rgba(0,200,255,.05)}
+.court-zone.empty{opacity:.3}
+.zone-num{font-size:8px;font-weight:700;color:var(--mt);letter-spacing:.1em;position:absolute;top:4px;right:6px}
+.zone-jersey{font-size:17px;font-weight:900;font-family:"JetBrains Mono",monospace;color:var(--tb);line-height:1}
+.zone-name{font-size:10px;font-weight:600;color:var(--td);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.zone-stat{font-size:10px;font-family:"JetBrains Mono",monospace;color:var(--ac);margin-top:2px}
+.badge{display:inline-block;font-size:8px;font-weight:700;padding:1px 4px;border-radius:2px;vertical-align:middle;margin-left:3px}
+.badge-l{background:var(--ac);color:var(--bg)}
+.badge-s{background:var(--gd);color:var(--bg)}
+
+/* ─ Player tables ─ */
 .tp{background:var(--sf);border:1px solid var(--br);border-radius:6px;overflow:hidden}
-.tph{padding:10px 14px;background:var(--sf2);border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between}
+.tph{padding:10px 14px;background:var(--sf2);border-bottom:1px solid var(--br);
+  display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tph-left{display:flex;align-items:center;gap:10px}
 .tpn{font-size:14px;font-weight:900;letter-spacing:.08em;color:var(--tb);text-transform:uppercase}
-.tps{font-size:10px;font-weight:700;color:var(--mt);letter-spacing:.12em;text-transform:uppercase}
-.ag{display:flex;gap:14px}
-.agv{font-size:16px;font-weight:700;color:var(--ac);line-height:1;font-family:'JetBrains Mono',monospace}
+.tps{font-size:9px;font-weight:700;color:var(--mt);letter-spacing:.12em;text-transform:uppercase}
+.team-logo-sm{width:28px;height:28px;object-fit:contain;filter:drop-shadow(0 1px 3px rgba(0,0,0,.4))}
+.ag{display:flex;gap:12px}
+.agv{font-size:16px;font-weight:700;color:var(--ac);line-height:1;font-family:"JetBrains Mono",monospace}
 .agl{font-size:8px;color:var(--mt);letter-spacing:.12em;text-transform:uppercase}
 .tw{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:11px}
-thead th{padding:5px 8px;background:var(--bg);color:var(--mt);font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;text-align:right;white-space:nowrap;border-bottom:1px solid var(--br)}
+thead th{padding:5px 8px;background:var(--bg);color:var(--mt);font-size:9px;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;text-align:right;white-space:nowrap;border-bottom:1px solid var(--br)}
 thead th:first-child,thead th:nth-child(2),thead th:nth-child(3){text-align:left}
 tbody tr{border-bottom:1px solid rgba(30,42,53,.6);transition:background .1s}
 tbody tr:hover{background:var(--sf2)}
-tbody tr.on-court-row{background:rgba(34,212,107,.04)}
-tbody tr.on-court-row td:nth-child(2){color:var(--gn)}
-tbody tr.serving-row{background:rgba(245,197,66,.05)}
-tbody tr.serving-row td:nth-child(2){color:var(--gd)}
-td{padding:6px 8px;text-align:right;white-space:nowrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--tx)}
+tbody tr.oc-row{background:rgba(34,212,107,.04)}
+tbody tr.oc-row td:nth-child(2){color:var(--gn)}
+tbody tr.srv-row{background:rgba(245,197,66,.05)}
+tbody tr.srv-row td:nth-child(2){color:var(--gd)}
+td{padding:6px 8px;text-align:right;white-space:nowrap;
+  font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--tx)}
 td:first-child{text-align:left;font-weight:700;color:var(--mt);width:28px}
-td:nth-child(2){text-align:left;color:var(--tb);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;min-width:130px}
-td:nth-child(3){text-align:left;width:50px}
+td:nth-child(2){text-align:left;color:var(--tb);font-family:"Barlow Condensed",sans-serif;font-size:12px;font-weight:600;min-width:120px}
+td:nth-child(3){text-align:left;width:52px}
 td.hl{color:var(--ac);font-weight:700}td.z{color:var(--mt)}td.eg{color:var(--gn)}td.eb{color:var(--ac2)}
-/* On-court status badge */
-.oc-badge{display:inline-flex;align-items:center;gap:3px;padding:1px 5px;border-radius:2px;font-size:9px;font-weight:700;letter-spacing:.06em;font-family:'Barlow Condensed',sans-serif}
+/* Hitting % colour coding: >.300=great, .200-.299=good, .100-.199=avg, <.100=poor */
+td.hit-great{color:#22d46b;font-weight:700}
+td.hit-good{color:#7bc8e0}
+td.hit-avg{color:var(--tx)}
+td.hit-poor{color:var(--ac2)}
+.oc-badge{display:inline-flex;align-items:center;padding:1px 5px;border-radius:2px;
+  font-size:9px;font-weight:700;letter-spacing:.05em;font-family:"Barlow Condensed",sans-serif}
 .oc-on{background:rgba(34,212,107,.15);color:var(--gn);border:1px solid rgba(34,212,107,.3)}
-.oc-serve{background:rgba(245,197,66,.15);color:var(--gd);border:1px solid rgba(245,197,66,.3)}
+.oc-srv{background:rgba(245,197,66,.15);color:var(--gd);border:1px solid rgba(245,197,66,.3)}
 .oc-lib{background:rgba(0,200,255,.15);color:var(--ac);border:1px solid rgba(0,200,255,.3)}
 .oc-bench{color:var(--mt);font-size:9px}
-/* XML panel */
-.xpanel{grid-column:1/-1;background:var(--sf);border:1px solid var(--br);border-radius:6px;overflow:hidden;display:none}
-.xpanel.open{display:block}
-.xhdr{background:var(--sf2);border-bottom:1px solid var(--br);padding:8px 14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+/* ─ XML panel ─ */
+.xpanel{grid-column:1/-1;background:var(--sf);border:1px solid var(--br);border-radius:6px;overflow:hidden}
+.xhdr{background:var(--sf2);border-bottom:1px solid var(--br);padding:8px 14px;
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .xtitle{font-size:12px;font-weight:700;color:var(--gd)}
-.xtabs{display:flex;gap:4px;margin-left:12px}
-.xtab{padding:3px 10px;border-radius:3px;cursor:pointer;font-size:10px;font-weight:700;letter-spacing:.08em;background:transparent;border:1px solid var(--br2);color:var(--mt);transition:all .1s;font-family:'Barlow Condensed',sans-serif}
+.xtabs{display:flex;gap:4px;margin-left:10px}
+.xtab{padding:3px 10px;border-radius:3px;cursor:pointer;font-size:10px;font-weight:700;
+  letter-spacing:.08em;background:transparent;border:1px solid var(--br2);color:var(--mt);
+  transition:all .1s;font-family:"Barlow Condensed",sans-serif}
+.xtab:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
 .xtab.on{background:var(--gd);color:var(--bg);border-color:var(--gd)}
-.xnote{font-size:10px;color:var(--mt);margin-left:8px;font-style:italic}
-.xbtn{margin-left:auto;padding:3px 10px;cursor:pointer;font-size:10px;font-weight:700;background:transparent;border:1px solid var(--br2);color:var(--tx);border-radius:3px;font-family:'Barlow Condensed',sans-serif}
-.xbtn:hover{border-color:var(--ac);color:var(--ac)}
-.xdl{padding:3px 10px;cursor:pointer;font-size:10px;font-weight:700;background:transparent;border:1px solid var(--br2);color:var(--tx);border-radius:3px;font-family:'Barlow Condensed',sans-serif;text-decoration:none;display:inline-block}
-.xdl:hover{border-color:var(--gd);color:var(--gd)}
-pre.xout{background:var(--bg);padding:12px 14px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#7ec8e3;overflow:auto;max-height:400px;line-height:1.6}
+.xml-actions{margin-left:auto;display:flex;gap:6px;align-items:center}
+.xbtn,.xdl{padding:5px 12px;cursor:pointer;font-size:11px;font-weight:700;
+  background:transparent;border:1px solid var(--br2);color:var(--tb);border-radius:4px;
+  font-family:"Barlow Condensed",sans-serif;text-decoration:none;display:inline-block;
+  letter-spacing:.06em;text-transform:uppercase;transition:all .15s}
+.xbtn:hover,.xdl:hover{border-color:var(--ac);color:var(--ac)}
+.xbtn:focus-visible,.xdl:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+pre.xout{background:var(--bg);padding:12px 14px;font-family:"JetBrains Mono",monospace;
+  font-size:10px;color:#7ec8e3;overflow:auto;max-height:400px;line-height:1.6;
+  white-space:pre;tab-size:2}
 pre.xout .tg{color:#569cd6}pre.xout .at{color:#9cdcfe}pre.xout .vl{color:#ce9178}pre.xout .cm{color:#4a607080}
-.empty{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:70px 24px;gap:14px;color:var(--mt);text-align:center}
-.emptyicon{font-size:56px;opacity:.25}.emptytitle{font-size:20px;font-weight:700}.emptysub{font-size:13px;max-width:380px;line-height:1.6}
-.errpanel{grid-column:1/-1;background:rgba(255,77,109,.06);border:1px solid rgba(255,77,109,.3);border-radius:6px;padding:14px 18px;display:none}
+
+/* ─ Empty / Error ─ */
+.empty{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:70px 24px;gap:14px;color:var(--mt);text-align:center}
+.emptyicon{font-size:56px;opacity:.25}.emptytitle{font-size:20px;font-weight:700}
+.emptysub{font-size:13px;max-width:400px;line-height:1.6}
+.errpanel{grid-column:1/-1;background:rgba(255,77,109,.06);border:1px solid rgba(255,77,109,.3);
+  border-radius:6px;padding:14px 18px;display:none}
 .errpanel.show{display:block}
 .errtitle{font-size:13px;font-weight:700;color:var(--ac2);margin-bottom:5px}
-.errmsg{font-size:12px;color:var(--td);font-family:'JetBrains Mono',monospace}
+.errmsg{font-size:12px;color:var(--td);font-family:"JetBrains Mono",monospace}
 .errhint{font-size:11px;color:var(--mt);margin-top:6px}
-@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}.fi{animation:fi .3s ease forwards}
+
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.fi{animation:fi .3s ease forwards}
+
+/* ─ Responsive ─ */
+@media(max-width:900px){
+  .dash{grid-template-columns:1fr}
+  .sh-teams{flex-direction:column}
+  .sh-center{border:none;border-top:1px solid var(--br);border-bottom:1px solid var(--br)}
+  .cds{grid-template-columns:1fr 1fr}
+  .court-row{grid-template-columns:1fr}
+  .teamstats-row{grid-template-columns:1fr}
+  .ts-center{display:none}
+}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
 </head>
 <body>
-<header>
-  <div class="logo">MLV<span>Stats</span></div>
-  <div class="pill idle" id="pill"><div class="dot"></div><span id="pt">Idle</span></div>
-  <div class="hr"><div class="upd" id="upd"></div></div>
+<a href="#main-content" class="skip">Skip to main content</a>
+
+<header role="banner">
+  <div class="logo" aria-label="MLV Stats Dashboard">MLV<span>Stats</span></div>
+  <div class="pill idle" id="pill" role="status" aria-live="polite" aria-atomic="true">
+    <div class="dot" aria-hidden="true"></div><span id="pt">Idle</span>
+  </div>
+  <div class="hdr-r"><div class="upd" id="upd" aria-live="polite"></div></div>
 </header>
-<div class="cfg">
-  <label>API Token</label>
-  <input type="password" id="tok" placeholder="VolleyStation token" autocomplete="off">
-  <div class="dv"></div>
-  <label>2026 Match</label>
-  <select id="msel"><option value="">&#8212; Select a match &#8212;</option></select>
-  <input type="text" id="manId" placeholder="Match ID" style="display:none;width:110px">
-  <div class="dv"></div>
-  <label>Interval</label>
-  <select id="iv"><option value="10">10s</option><option value="20">20s</option><option value="30" selected>30s</option><option value="60">60s</option></select>
-  <div class="dv"></div>
-  <button class="btn bs" id="btnS" onclick="startPolling()">&#9654; Start</button>
-  <button class="btn bp" id="btnP" onclick="stopPolling()" disabled>&#9632; Stop</button>
-  <div class="dv"></div>
-  <button class="btn bx" id="btnX" onclick="toggleXml()" disabled>&#8595; XML</button>
+
+<div class="cfg" role="toolbar" aria-label="Dashboard controls">
+  <label for="tok">API Token</label>
+  <input type="password" id="tok" placeholder="VolleyStation token" autocomplete="off" aria-required="true">
+  <div class="dv" role="separator"></div>
+  <label for="msel">2026 Match</label>
+  <select id="msel" aria-label="Select match"><option value="">&#8212; Select a match &#8212;</option></select>
+  <input type="text" id="manId" placeholder="Match ID" style="display:none;width:110px" aria-label="Manual match ID">
+  <div class="dv" role="separator"></div>
+  <label for="iv">Interval</label>
+  <select id="iv" aria-label="Polling interval">
+    <option value="10">10s</option><option value="20">20s</option>
+    <option value="30" selected>30s</option><option value="60">60s</option>
+  </select>
+  <div class="dv" role="separator"></div>
+  <button class="btn bs" id="btnS" onclick="startPolling()" aria-label="Start live polling">&#9654; Start</button>
+  <button class="btn bp" id="btnP" onclick="stopPolling()" disabled aria-label="Stop polling">&#9632; Stop</button>
+  <div class="dv" role="separator"></div>
+  <button class="btn bx" id="btnX" onclick="toggleXml()" disabled aria-expanded="false" aria-controls="xpanel" aria-label="Toggle XML output panel">&#8595; XML</button>
 </div>
-<div id="cw">&#9889; Attempts direct API call first &#8212; no proxy needed. If blocked by CORS, run <code>node proxy.js</code> and it retries automatically.
-  <span id="cok" style="color:var(--gn);display:none">&#10003; Direct API working &#8212; no proxy needed</span></div>
+
+<div id="cw" role="note" aria-label="Connection information">
+  &#9889; Tries direct API first &#8212; no proxy needed. If CORS blocked, run <code>node proxy.js</code> and it retries automatically.
+  <span id="cok" style="color:var(--gn);display:none" aria-live="polite">&#10003; Direct API working &#8212; no proxy needed</span>
+</div>
+
+<main id="main-content">
 <div class="dash" id="dash">
-  <div class="errpanel" id="ep"><div class="errtitle" id="et">Error</div><div class="errmsg" id="em"></div><div class="errhint" id="eh"></div></div>
-  <div class="empty" id="empty"><div class="emptyicon">&#127904;</div><div class="emptytitle">Ready to go</div><div class="emptysub">Select a 2026 match from the dropdown, enter your API token, and hit Start. Stats update live and XML exports for Xpression and Daktronics.</div></div>
+
+  <div class="errpanel" id="ep" role="alert" aria-live="assertive">
+    <div class="errtitle" id="et">Error</div>
+    <div class="errmsg" id="em"></div>
+    <div class="errhint" id="eh"></div>
+  </div>
+
+  <div class="empty" id="empty" role="region" aria-label="No match loaded">
+    <div class="emptyicon" aria-hidden="true">&#127904;</div>
+    <div class="emptytitle">Ready to go</div>
+    <div class="emptysub">Select a 2026 match from the dropdown, enter your API token, and press Start. Stats update live throughout the game with XML export for Xpression and Daktronics.</div>
+  </div>
 
   <!-- Score header -->
-  <div class="sh fi" id="sh" style="display:none">
-    <div class="st"><div class="sn" id="hn"></div><div class="sm" id="hm"></div></div>
-    <div class="sc">
-      <div class="ss"><div class="sv" id="hs">0</div><div class="sd">&#8211;</div><div class="sv" id="aws">0</div></div>
-      <div class="chips" id="ch"></div>
-      <div class="inds" id="ind"></div>
+  <div class="sh fi" id="sh" style="display:none" role="region" aria-label="Score">
+    <div class="sh-teams">
+      <div class="sh-team home" id="shHome">
+        <img class="team-logo" id="hLogo" src="" alt="" aria-hidden="true">
+        <div class="team-info">
+          <div class="team-name-big" id="hn"></div>
+          <div class="sets-won-lbl">Sets Won</div>
+          <div class="sets-won-val" id="hs" aria-label="Home sets won">0</div>
+        </div>
+      </div>
+      <div class="sh-center">
+        <div class="set-chips" id="ch" aria-label="Set scores"></div>
+        <div class="inds" id="ind" aria-live="polite"></div>
+      </div>
+      <div class="sh-team away" id="shAway">
+        <img class="team-logo" id="aLogo" src="" alt="" aria-hidden="true">
+        <div class="team-info">
+          <div class="team-name-big" id="an"></div>
+          <div class="sets-won-lbl">Sets Won</div>
+          <div class="sets-won-val" id="as2" aria-label="Away sets won">0</div>
+        </div>
+      </div>
     </div>
-    <div class="st"><div class="sn aw" id="an"></div><div class="sm aw" id="am"></div></div>
   </div>
 
   <!-- Stat cards -->
-  <div class="cds fi" id="cds" style="display:none">
-    <div class="cd"><div class="cl">Timeouts Left</div><div class="cb"><div><div class="cv h" id="hto">&#8212;</div><div class="cs">Home</div></div><div class="csep">|</div><div><div class="cv a" id="ato">&#8212;</div><div class="cs">Away</div></div></div></div>
-    <div class="cd"><div class="cl">Substitutions Left</div><div class="cb"><div><div class="cv h" id="hsub">&#8212;</div><div class="cs">Home</div></div><div class="csep">|</div><div><div class="cv a" id="asub">&#8212;</div><div class="cs">Away</div></div></div></div>
-    <div class="cd"><div class="cl">Home On Court</div><div class="cb" style="align-items:center"><div class="lu" id="hlu">&#8212;</div></div></div>
-    <div class="cd"><div class="cl">Away On Court</div><div class="cb" style="align-items:center"><div class="lu" id="alu">&#8212;</div></div></div>
+  <div class="cds fi" id="cds" style="display:none" role="region" aria-label="Match state">
+    <div class="cd"><div class="cl">Timeouts Left</div>
+      <div class="cb">
+        <div><div class="cv h" id="hto" aria-label="Home timeouts remaining">&#8212;</div><div class="cs">Home</div></div>
+        <div class="csep" aria-hidden="true">|</div>
+        <div><div class="cv a" id="ato" aria-label="Away timeouts remaining">&#8212;</div><div class="cs">Away</div></div>
+      </div>
+    </div>
+    <div class="cd"><div class="cl">Substitutions Left</div>
+      <div class="cb">
+        <div><div class="cv h" id="hsub">&#8212;</div><div class="cs">Home</div></div>
+        <div class="csep" aria-hidden="true">|</div>
+        <div><div class="cv a" id="asub">&#8212;</div><div class="cs">Away</div></div>
+      </div>
+    </div>
+    <div class="cd"><div class="cl">Home On Court</div>
+      <div class="cb" style="align-items:center"><div class="lu" id="hlu" aria-label="Home players on court">&#8212;</div></div>
+    </div>
+    <div class="cd"><div class="cl">Away On Court</div>
+      <div class="cb" style="align-items:center"><div class="lu" id="alu" aria-label="Away players on court">&#8212;</div></div>
+    </div>
   </div>
 
-  <!-- Court view: zone-by-zone grid -->
-  <div class="court-row fi" id="courtRow" style="display:none">
-    <div class="court-panel">
-      <div class="court-hdr"><div class="court-title" id="hCourtName">Home</div><div class="court-sub">Current Court &#8211; Zones 1&#8211;6</div></div>
-      <div class="court-grid" id="hCourtGrid"></div>
+  <!-- Team stats comparison bar -->
+  <div class="teamstats-row fi" id="tsRow" style="display:none" role="region" aria-label="Team statistics comparison">
+    <div class="ts-side home-side" id="tsHome">
+      <div class="ts-header" id="tsHName">Home</div>
+      <div class="ts-bars" id="tsHomeBars"></div>
     </div>
-    <div class="court-panel">
-      <div class="court-hdr"><div class="court-title" id="aCourtName">Away</div><div class="court-sub">Current Court &#8211; Zones 1&#8211;6</div></div>
-      <div class="court-grid" id="aCourtGrid"></div>
+    <div class="ts-center">
+      <div class="ts-center-lbl">Set</div>
+      <div class="ts-center-val" id="tsCurSet">&#8212;</div>
+    </div>
+    <div class="ts-side away-side" id="tsAway">
+      <div class="ts-header" id="tsAName">Away</div>
+      <div class="ts-bars" id="tsAwayBars"></div>
     </div>
   </div>
 
-  <!-- Team tables: all players with on-court status column -->
-  <div class="tp fi" id="hp" style="display:none">
-    <div class="tph"><div><div class="tpn" id="hpn">Home</div><div class="tps">All Players</div></div><div class="ag" id="hag"></div></div>
-    <div class="tw"><table><thead><tr>
-      <th>#</th><th>Player</th><th>Court</th><th>SP</th><th>PTS</th>
-      <th>ACE</th><th>SrvE</th><th>RecT</th><th>Pos%</th><th>Prf%</th>
-      <th>AtkT</th><th>K</th><th>AtkE</th><th>Eff</th><th>BlkP</th><th>Dig</th><th>Ast</th>
-    </tr></thead><tbody id="hbd"></tbody></table></div>
+  <!-- Court grids -->
+  <div class="court-row fi" id="courtRow" style="display:none" role="region" aria-label="Current court positions">
+    <div class="court-panel">
+      <div class="court-hdr">
+        <div class="court-title" id="hCourtName">Home</div>
+        <div class="court-sub">Court &#8211; Zones 1&#8211;6</div>
+      </div>
+      <div class="court-grid" id="hCourtGrid" role="list" aria-label="Home court zones"></div>
+    </div>
+    <div class="court-panel">
+      <div class="court-hdr">
+        <div class="court-title" id="aCourtName">Away</div>
+        <div class="court-sub">Court &#8211; Zones 1&#8211;6</div>
+      </div>
+      <div class="court-grid" id="aCourtGrid" role="list" aria-label="Away court zones"></div>
+    </div>
   </div>
-  <div class="tp fi" id="ap" style="display:none">
-    <div class="tph"><div><div class="tpn" id="apn">Away</div><div class="tps">All Players</div></div><div class="ag" id="aag"></div></div>
-    <div class="tw"><table><thead><tr>
-      <th>#</th><th>Player</th><th>Court</th><th>SP</th><th>PTS</th>
-      <th>ACE</th><th>SrvE</th><th>RecT</th><th>Pos%</th><th>Prf%</th>
-      <th>AtkT</th><th>K</th><th>AtkE</th><th>Eff</th><th>BlkP</th><th>Dig</th><th>Ast</th>
-    </tr></thead><tbody id="abd"></tbody></table></div>
+
+  <!-- Player tables -->
+  <div class="tp fi" id="hp" style="display:none" role="region">
+    <div class="tph">
+      <div class="tph-left">
+        <img class="team-logo-sm" id="hLogoSm" src="" alt="" aria-hidden="true">
+        <div><div class="tpn" id="hpn">Home</div><div class="tps">All Players &#8212; On Court First</div></div>
+      </div>
+      <div class="ag" id="hag" aria-label="Home team totals"></div>
+    </div>
+    <div class="tw">
+      <table aria-label="Home player statistics">
+        <thead><tr>
+          <th scope="col">#</th><th scope="col">Player</th><th scope="col">Court</th>
+          <th scope="col">SP</th><th scope="col">PTS</th>
+          <th scope="col">K</th><th scope="col">E</th><th scope="col">TA</th><th scope="col">Hit%</th>
+          <th scope="col">ACE</th><th scope="col">SErr</th>
+          <th scope="col">RecT</th><th scope="col">Pos%</th><th scope="col">Prf%</th>
+          <th scope="col">BlkP</th><th scope="col">Dig</th><th scope="col">Ast</th>
+        </tr></thead>
+        <tbody id="hbd"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="tp fi" id="ap" style="display:none" role="region">
+    <div class="tph">
+      <div class="tph-left">
+        <img class="team-logo-sm" id="aLogoSm" src="" alt="" aria-hidden="true">
+        <div><div class="tpn" id="apn">Away</div><div class="tps">All Players &#8212; On Court First</div></div>
+      </div>
+      <div class="ag" id="aag" aria-label="Away team totals"></div>
+    </div>
+    <div class="tw">
+      <table aria-label="Away player statistics">
+        <thead><tr>
+          <th scope="col">#</th><th scope="col">Player</th><th scope="col">Court</th>
+          <th scope="col">SP</th><th scope="col">PTS</th>
+          <th scope="col">K</th><th scope="col">E</th><th scope="col">TA</th><th scope="col">Hit%</th>
+          <th scope="col">ACE</th><th scope="col">SErr</th>
+          <th scope="col">RecT</th><th scope="col">Pos%</th><th scope="col">Prf%</th>
+          <th scope="col">BlkP</th><th scope="col">Dig</th><th scope="col">Ast</th>
+        </tr></thead>
+        <tbody id="abd"></tbody>
+      </table>
+    </div>
   </div>
 
   <!-- XML panel -->
-  <div class="xpanel" id="xp">
+  <div class="xpanel fi" id="xpanel" style="display:none" role="region" aria-label="XML output">
     <div class="xhdr">
-      <div class="xtitle">&#128196; XML Output</div>
-      <div class="xtabs">
-        <button class="xtab on" onclick="swTab('xpression')">Xpression</button>
-        <button class="xtab" onclick="swTab('daktronics')">Daktronics</button>
+      <div class="xtitle" id="xtitleLbl">&#128196; XML Output</div>
+      <div class="xtabs" role="tablist" aria-label="XML format">
+        <button class="xtab on" id="xtab-xpression" role="tab" aria-selected="true" onclick="swTab('xpression')">Xpression</button>
+        <button class="xtab" id="xtab-daktronics" role="tab" aria-selected="false" onclick="swTab('daktronics')">Daktronics</button>
       </div>
-      <span class="xnote" id="xnote">Includes on-court zone slots + full roster</span>
-      <button class="xbtn" onclick="cpXml()">Copy</button>
-      <a class="xdl" href="#" onclick="dlXml(event)">Download</a>
+      <div class="xml-actions">
+        <button class="xbtn" onclick="cpXml()" aria-label="Copy XML to clipboard">Copy</button>
+        <a class="xdl" href="#" onclick="dlXml(event)" aria-label="Download XML file">&#8595; Download</a>
+      </div>
     </div>
-    <pre class="xout" id="xo"></pre>
+    <pre class="xout" id="xo" tabindex="0" aria-label="XML content" aria-live="polite"></pre>
   </div>
+
 </div>
+</main>
+
 <script>
 const M=[{"id": 2256597, "home": "Atlanta Vibe", "away": "Columbus Fury", "dt": "2026-01-08 19:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256598, "home": "Omaha Supernovas", "away": "San Diego Mojo", "dt": "2026-01-08 20:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256599, "home": "Orlando Valkyries", "away": "Grand Rapids Rise", "dt": "2026-01-09 19:00 EST", "type": "Regular", "bc": "RK"}, {"id": 2256600, "home": "Columbus Fury", "away": "Omaha Supernovas", "dt": "2026-01-10 19:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256601, "home": "Dallas Pulse", "away": "Indy Ignite", "dt": "2026-01-10 19:00 EST", "type": "Regular", "bc": "RK"}, {"id": 2256602, "home": "Atlanta Vibe", "away": "Grand Rapids Rise", "dt": "2026-01-11 16:00 EST", "type": "Regular", "bc": "CBS"}, {"id": 2256603, "home": "San Diego Mojo", "away": "Orlando Valkyries", "dt": "2026-01-11 19:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256604, "home": "Grand Rapids Rise", "away": "Columbus Fury", "dt": "2026-01-14 19:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256605, "home": "Dallas Pulse", "away": "San Diego Mojo", "dt": "2026-01-15 20:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256606, "home": "Omaha Supernovas", "away": "Atlanta Vibe", "dt": "2026-01-16 20:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256607, "home": "Columbus Fury", "away": "Indy Ignite", "dt": "2026-01-17 19:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256608, "home": "San Diego Mojo", "away": "Atlanta Vibe", "dt": "2026-01-18 19:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256609, "home": "Omaha Supernovas", "away": "Orlando Valkyries", "dt": "2026-01-18 16:00 EST", "type": "Regular", "bc": "CBS"}, {"id": 2256610, "home": "Atlanta Vibe", "away": "Dallas Pulse", "dt": "2026-01-22 19:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256611, "home": "Omaha Supernovas", "away": "Columbus Fury", "dt": "2026-01-22 20:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256612, "home": "Orlando Valkyries", "away": "Indy Ignite", "dt": "2026-01-22 19:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256613, "home": "San Diego Mojo", "away": "Grand Rapids Rise", "dt": "2026-01-23 22:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256614, "home": "Indy Ignite", "away": "Omaha Supernovas", "dt": "2026-01-24 19:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256615, "home": "Columbus Fury", "away": "Atlanta Vibe", "dt": "2026-05-03 14:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256616, "home": "Orlando Valkyries", "away": "Dallas Pulse", "dt": "2026-01-25 15:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256617, "home": "Indy Ignite", "away": "Atlanta Vibe", "dt": "2026-01-29 19:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256618, "home": "Columbus Fury", "away": "Dallas Pulse", "dt": "2026-01-29 19:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256619, "home": "Grand Rapids Rise", "away": "Orlando Valkyries", "dt": "2026-01-29 19:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256620, "home": "Omaha Supernovas", "away": "San Diego Mojo", "dt": "2026-01-30 20:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256621, "home": "Columbus Fury", "away": "Orlando Valkyries", "dt": "2026-01-31 19:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256622, "home": "Indy Ignite", "away": "Dallas Pulse", "dt": "2026-01-31 19:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256623, "home": "Atlanta Vibe", "away": "San Diego Mojo", "dt": "2026-02-01 15:00 EST", "type": "Regular", "bc": "VICE"}, {"id": 2256624, "home": "Grand Rapids Rise", "away": "Omaha Supernovas", "dt": "2026-02-01 16:00 EST", "type": "Regular", "bc": "CBS"}, {"id": 2256625, "home": "Dallas Pulse", "away": "Omaha Supernovas", "dt": "2026-02-05 20:00 EST", "type": "Regular", "bc": "RK"}, {"id": 2256626, "home": "Orlando Valkyries", "away": "Atlanta Vibe", "dt": "2026-02-06 19:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256627, "home": "San Diego Mojo", "away": "Columbus Fury", "dt": "2026-02-06 22:00 EST", "type": "Regular", "bc": "CBS"}, {"id": 2256628, "home": "Indy Ignite", "away": "Grand Rapids Rise", "dt": "2026-02-06 19:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256629, "home": "Dallas Pulse", "away": "Grand Rapids Rise", "dt": "2026-02-08 15:00 EST", "type": "Regular", "bc": "VICE"}, {"id": 2256630, "home": "Orlando Valkyries", "away": "Omaha Supernovas", "dt": "2026-02-08 15:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256631, "home": "San Diego Mojo", "away": "Indy Ignite", "dt": "2026-02-09 22:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256632, "home": "Omaha Supernovas", "away": "Dallas Pulse", "dt": "2026-02-12 20:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256633, "home": "Grand Rapids Rise", "away": "San Diego Mojo", "dt": "2026-02-12 19:00 EST", "type": "Regular", "bc": "RK"}, {"id": 2256634, "home": "Indy Ignite", "away": "Orlando Valkyries", "dt": "2026-02-13 19:00 EST", "type": "Regular", "bc": "RK"}, {"id": 2256635, "home": "Grand Rapids Rise", "away": "Atlanta Vibe", "dt": "2026-02-14 19:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256636, "home": "Columbus Fury", "away": "Dallas Pulse", "dt": "2026-02-14 19:00 EST", "type": "Regular", "bc": "RK"}, {"id": 2256637, "home": "Indy Ignite", "away": "San Diego Mojo", "dt": "2026-02-15 15:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256638, "home": "Omaha Supernovas", "away": "Orlando Valkyries", "dt": "2026-02-15 18:00 EST", "type": "Regular", "bc": "VICE"}, {"id": 2256639, "home": "Atlanta Vibe", "away": "Columbus Fury", "dt": "2026-02-19 19:00 EST", "type": "Regular", "bc": "RK"}, {"id": 2256640, "home": "Dallas Pulse", "away": "Indy Ignite", "dt": "2026-02-19 20:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256641, "home": "Atlanta Vibe", "away": "Indy Ignite", "dt": "2026-02-21 18:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256642, "home": "Orlando Valkyries", "away": "Columbus Fury", "dt": "2026-02-22 16:00 EST", "type": "Regular", "bc": "CBS"}, {"id": 2256643, "home": "Dallas Pulse", "away": "Grand Rapids Rise", "dt": "2026-02-22 15:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256644, "home": "San Diego Mojo", "away": "Omaha Supernovas", "dt": "2026-02-22 19:00 EST", "type": "Regular", "bc": "VICE"}, {"id": 2256645, "home": "Omaha Supernovas", "away": "Atlanta Vibe", "dt": "2026-02-26 20:00 EST", "type": "Regular", "bc": "RK"}, {"id": 2256646, "home": "Grand Rapids Rise", "away": "San Diego Mojo", "dt": "2026-02-26 19:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256647, "home": "Columbus Fury", "away": "Indy Ignite", "dt": "2026-02-27 19:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256648, "home": "Dallas Pulse", "away": "Orlando Valkyries", "dt": "2026-02-27 20:00 EST", "type": "Regular", "bc": "CBS"}, {"id": 2256649, "home": "Atlanta Vibe", "away": "Dallas Pulse", "dt": "2026-03-01 15:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256650, "home": "San Diego Mojo", "away": "Columbus Fury", "dt": "2026-03-01 19:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256651, "home": "Orlando Valkyries", "away": "Grand Rapids Rise", "dt": "2026-03-01 15:00 EST", "type": "Regular", "bc": "VICE"}, {"id": 2256652, "home": "Indy Ignite", "away": "Omaha Supernovas", "dt": "2026-03-01 14:00 EST", "type": "Regular", "bc": "CBS"}, {"id": 2256653, "home": "Orlando Valkyries", "away": "Columbus Fury", "dt": "2026-03-05 19:00 EST", "type": "Regular", "bc": "RK"}, {"id": 2256654, "home": "San Diego Mojo", "away": "Atlanta Vibe", "dt": "2026-03-07 21:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256655, "home": "Orlando Valkyries", "away": "Dallas Pulse", "dt": "2026-03-07 19:00 EST", "type": "Regular", "bc": "YT"}, {"id": 2256656, "home": "Grand Rapids Rise", "away": "Omaha Supernovas", "dt": "2026-03-07 19:00 EST", "type": "Regular", "bc": "RK"}, {"id": 2256657, "home": "Indy Ignite", "away": "Grand Rapids Rise", "dt": "2026-03-08 18:00 EDT", "type": "Regular", "bc": "YT"}, {"id": 2256658, "home": "Columbus Fury", "away": "Omaha Supernovas", "dt": "2026-03-10 19:00 EDT", "type": "Regular", "bc": "RK"}, {"id": 2256659, "home": "Indy Ignite", "away": "Orlando Valkyries", "dt": "2026-03-12 19:00 EDT", "type": "Regular", "bc": "RK"}, {"id": 2256660, "home": "Atlanta Vibe", "away": "Grand Rapids Rise", "dt": "2026-03-13 19:00 EDT", "type": "Regular", "bc": "YT"}, {"id": 2256661, "home": "Dallas Pulse", "away": "Columbus Fury", "dt": "2026-03-13 20:00 EDT", "type": "Regular", "bc": "YT"}, {"id": 2256662, "home": "Omaha Supernovas", "away": "Indy Ignite", "dt": "2026-03-14 20:00 EDT", "type": "Regular", "bc": "RK"}, {"id": 2256663, "home": "Orlando Valkyries", "away": "San Diego Mojo", "dt": "2026-03-14 19:00 EDT", "type": "Regular", "bc": "YT"}, {"id": 2256664, "home": "Dallas Pulse", "away": "Atlanta Vibe", "dt": "2026-03-15 16:00 EDT", "type": "Regular", "bc": "CBS"}, {"id": 2256665, "home": "Grand Rapids Rise", "away": "Dallas Pulse", "dt": "2026-03-18 19:00 EDT", "type": "Regular", "bc": "YT"}, {"id": 2256666, "home": "Atlanta Vibe", "away": "Orlando Valkyries", "dt": "2026-03-19 19:00 EDT", "type": "Regular", "bc": "RK"}, {"id": 2256667, "home": "Indy Ignite", "away": "Columbus Fury", "dt": "2026-03-19 20:00 EDT", "type": "Regular", "bc": "CBS"}, {"id": 2256668, "home": "Omaha Supernovas", "away": "Grand Rapids Rise", "dt": "2026-03-20 20:00 EDT", "type": "Regular", "bc": "CBS"}, {"id": 2256669, "home": "Dallas Pulse", "away": "San Diego Mojo", "dt": "2026-03-21 20:00 EDT", "type": "Regular", "bc": "YT"}, {"id": 2256670, "home": "Columbus Fury", "away": "Orlando Valkyries", "dt": "2026-03-24 19:00 EDT", "type": "Regular", "bc": "YT"}, {"id": 2256671, "home": "Grand Rapids Rise", "away": "Indy Ignite", "dt": "2026-03-25 19:00 EDT", "type": "Regular", "bc": "CBS"}, {"id": 2256672, "home": "San Diego Mojo", "away": "Omaha Supernovas", "dt": "2026-03-25 22:00 EDT", "type": "Regular", "bc": "YT"}, {"id": 2256673, "home": "Dallas Pulse", "away": "Atlanta Vibe", "dt": "2026-03-26 20:00 EDT", "type": "Regular", "bc": "RK"}, {"id": 2256674, "home": "Atlanta Vibe", "away": "Omaha Supernovas", "dt": "2026-04-02 19:00 EDT", "type": "Regular", "bc": "RK"}, {"id": 2256675, "home": "Columbus Fury", "away": "San Diego Mojo", "dt": "2026-04-03 19:00 EDT", "type": "Regular", "bc": "YT"}, {"id": 2256676, "home": "Grand Rapids Rise", "away": "Dallas Pulse", "dt": "2026-04-03 19:00 EDT", "type": "Regular", "bc": "YT"}, {"id": 2256677, "home": "Atlanta Vibe", "away": "Orlando Valkyries", "dt": "2026-04-04 18:00 EDT", "type": "Regular", "bc": "CBS"}, {"id": 2256678, "home": "Omaha Supernovas", "away": "Indy Ignite", "dt": "2026-04-04 19:00 EDT", "type": "Regular", "bc": "YT"}, {"id": 2256679, "home": "Columbus Fury", "away": "Grand Rapids Rise", "dt": "2026-04-05 17:00 EDT", "type": "Regular", "bc": "VICE"}, {"id": 2256680, "home": "San Diego Mojo", "away": "Dallas Pulse", "dt": "2026-04-05 20:00 EDT", "type": "Regular", "bc": "RK"}, {"id": 2256681, "home": "San Diego Mojo", "away": "Indy Ignite", "dt": "2026-04-09 22:00 EDT", "type": "Regular", "bc": "CBS"}, {"id": 2256682, "home": "Columbus Fury", "away": "Atlanta Vibe", "dt": "2026-04-10 19:00 EDT", "type": "Regular", "bc": "RK"}, {"id": 2256683, "home": "Omaha Supernovas", "away": "Grand Rapids Rise", "dt": "2026-04-10 20:00 EDT", "type": "Regular", "bc": "YT"}, {"id": 2256684, "home": "San Diego Mojo", "away": "Orlando Valkyries", "dt": "2026-04-11 21:00 EDT", "type": "Regular", "bc": "YT"}, {"id": 2256685, "home": "Indy Ignite", "away": "Atlanta Vibe", "dt": "2026-04-12 15:00 EDT", "type": "Regular", "bc": "VICE"}, {"id": 2256686, "home": "Grand Rapids Rise", "away": "Columbus Fury", "dt": "2026-04-12 15:00 EDT", "type": "Regular", "bc": "RK"}, {"id": 2256687, "home": "Omaha Supernovas", "away": "Dallas Pulse", "dt": "2026-04-12 17:00 EDT", "type": "Regular", "bc": "YT"}, {"id": 2256688, "home": "Orlando Valkyries", "away": "Omaha Supernovas", "dt": "2026-04-16 19:00 EDT", "type": "Regular", "bc": "RK"}, {"id": 2256689, "home": "Atlanta Vibe", "away": "San Diego Mojo", "dt": "2026-04-17 19:00 EDT", "type": "Regular", "bc": "YT"}, {"id": 2256690, "home": "Dallas Pulse", "away": "Columbus Fury", "dt": "2026-04-17 20:00 EDT", "type": "Regular", "bc": "YT"}, {"id": 2256691, "home": "Grand Rapids Rise", "away": "Indy Ignite", "dt": "2026-04-17 19:00 EDT", "type": "Regular", "bc": "YT"}, {"id": 2256692, "home": "Atlanta Vibe", "away": "Omaha Supernovas", "dt": "2026-04-19 15:00 EDT", "type": "Regular", "bc": "YT"}, {"id": 2256693, "home": "Columbus Fury", "away": "Grand Rapids Rise", "dt": "2026-04-19 14:00 EDT", "type": "Regular", "bc": "YT"}, {"id": 2256694, "home": "Indy Ignite", "away": "Dallas Pulse", "dt": "2026-04-19 18:00 EDT", "type": "Regular", "bc": "VICE"}, {"id": 2256695, "home": "Orlando Valkyries", "away": "San Diego Mojo", "dt": "2026-04-19 15:00 EDT", "type": "Regular", "bc": "CBS"}, {"id": 2256696, "home": "Grand Rapids Rise", "away": "Atlanta Vibe", "dt": "2026-04-22 19:00 EDT", "type": "Regular", "bc": "YT"}, {"id": 2256697, "home": "Orlando Valkyries", "away": "Indy Ignite", "dt": "2026-04-23 19:00 EDT", "type": "Regular", "bc": "YT"}, {"id": 2256698, "home": "Omaha Supernovas", "away": "Columbus Fury", "dt": "2026-04-24 20:00 EDT", "type": "Regular", "bc": "YT"}, {"id": 2256699, "home": "San Diego Mojo", "away": "Dallas Pulse", "dt": "2026-04-24 22:00 EDT", "type": "Regular", "bc": "YT"}, {"id": 2256700, "home": "Grand Rapids Rise", "away": "Orlando Valkyries", "dt": "2026-04-25 19:00 EDT", "type": "Regular", "bc": "YT"}, {"id": 2256701, "home": "Atlanta Vibe", "away": "Indy Ignite", "dt": "2026-04-26 15:00 EDT", "type": "Regular", "bc": "CBS"}, {"id": 2256702, "home": "Columbus Fury", "away": "San Diego Mojo", "dt": "2026-04-26 14:00 EDT", "type": "Regular", "bc": "VICE"}, {"id": 2256703, "home": "San Diego Mojo", "away": "Grand Rapids Rise", "dt": "2026-04-30 22:00 EDT", "type": "Regular", "bc": "RK"}, {"id": 2256704, "home": "Orlando Valkyries", "away": "Atlanta Vibe", "dt": "2026-05-01 19:00 EDT", "type": "Regular", "bc": "YT"}, {"id": 2256705, "home": "Indy Ignite", "away": "Columbus Fury", "dt": "2026-05-01 19:00 EDT", "type": "Regular", "bc": "YT"}, {"id": 2256706, "home": "Dallas Pulse", "away": "Omaha Supernovas", "dt": "2026-05-01 20:00 EDT", "type": "Regular", "bc": "YT"}, {"id": 2256707, "home": "Dallas Pulse", "away": "Orlando Valkyries", "dt": "2026-05-03 16:00 EDT", "type": "Regular", "bc": "VICE"}, {"id": 2256708, "home": "Indy Ignite", "away": "San Diego Mojo", "dt": "2026-05-03 15:00 EDT", "type": "Regular", "bc": "YT"}];
+const TEAMS={"Atlanta Vibe": {"primary": "#EF3240", "secondary": "#8EC8E9", "logo": "https://assets.volleystation.com/website/teams/2109694/badge.svg"}, "Columbus Fury": {"primary": "#BA0C2F", "secondary": "#FFD100", "logo": "https://assets.volleystation.com/website/teams/2109695/badge.svg"}, "Grand Rapids Rise": {"primary": "#00573F", "secondary": "#8B2332", "logo": "https://assets.volleystation.com/website/teams/2109700/badge.svg"}, "Indy Ignite": {"primary": "#F5A800", "secondary": "#002B5C", "logo": "https://assets.volleystation.com/website/teams/2124335/badge.svg"}, "Omaha Supernovas": {"primary": "#003087", "secondary": "#A50034", "logo": "https://assets.volleystation.com/website/teams/2121397/badge.svg"}, "Orlando Valkyries": {"primary": "#512D6D", "secondary": "#00B5E2", "logo": "https://assets.volleystation.com/website/teams/2109697/badge.svg"}, "San Diego Mojo": {"primary": "#FF6B00", "secondary": "#002D62", "logo": "https://assets.volleystation.com/website/teams/2109698/badge.svg"}, "Dallas Pulse": {"primary": "#C8102E", "secondary": "#1B3A7A", "logo": "https://assets.volleystation.com/website/teams/2109699/badge.svg"}};
 
 const API='https://panel.volleystation.com/api';
 const PROXY='http://localhost:3030';
@@ -243,8 +455,7 @@ const sel=document.getElementById('msel');
 const today=new Date().toISOString().slice(0,10);
 let tg=null,ug=null;
 M.forEach(m=>{
-  const d0=m.dt.slice(0,10);
-  const isT=d0===today,isPast=d0<today;
+  const d0=m.dt.slice(0,10),isT=d0===today,isPast=d0<today;
   if(isT&&!tg){tg=document.createElement('optgroup');tg.label='Today';sel.appendChild(tg);}
   if(!isPast&&!isT&&!ug){ug=document.createElement('optgroup');ug.label='Upcoming';sel.appendChild(ug);}
   const dt=m.dt.replace(/:\d\d [A-Z]+$/,'');
@@ -254,79 +465,81 @@ M.forEach(m=>{
 sel.appendChild(new Option('\u2014 Enter ID manually \u2014','__manual__'));
 sel.addEventListener('change',()=>{
   const mi=document.getElementById('manId');
-  mi.style.display=sel.value==='__manual__'?'inline-block':'none';
-  if(sel.value==='__manual__')mi.focus();
+  if(sel.value==='__manual__'){mi.style.display='inline-block';mi.focus();}
+  else mi.style.display='none';
 });
 function getMid(){return sel.value==='__manual__'?document.getElementById('manId').value.trim():sel.value;}
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Team branding helpers ─────────────────────────────────────────────────────
+function teamColor(name,which){
+  const t=TEAMS[name];
+  if(!t)return which==='primary'?'#00c8ff':'#ff4d6d';
+  return t[which]||'#00c8ff';
+}
+function teamLogo(name){return TEAMS[name]?.logo||'';}
+function applyTeamColors(homeName,awayName){
+  const hp=teamColor(homeName,'primary'),ap=teamColor(awayName,'primary');
+  document.documentElement.style.setProperty('--team-h',hp);
+  document.documentElement.style.setProperty('--team-a',ap);
+  // Score header BG
+  const hEl=document.getElementById('shHome'),aEl=document.getElementById('shAway');
+  if(hEl)hEl.style.background=`linear-gradient(135deg,${hp}cc 0%,${hp}44 60%,transparent 100%)`;
+  if(aEl)aEl.style.background=`linear-gradient(225deg,${ap}cc 0%,${ap}44 60%,transparent 100%)`;
+}
+
+// ── Stat helpers ──────────────────────────────────────────────────────────────
 const sk=(s,c,e)=>Number(s?.[c]?.[e]??0);
 const skS=(s,c)=>{const x=s?.[c]||{};return Object.values(x).reduce((a,b)=>a+(Number(b)||0),0);};
 const pctFmt=v=>{const n=parseFloat(v);return(!v||isNaN(n)||n===0)?'-':(n*100).toFixed(1)+'%';};
-const effCls=v=>{const n=parseFloat(v);return isNaN(n)?'':n>=.35?'eg':n<0?'eb':'';};
 const nc=n=>Number(n)===0?'z':'hl';
 const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-// ── Normalize player from API ──────────────────────────────────────────────────
+// Hitting % = (kills - errors) / total attempts  [volleyball standard]
+function hitPct(p){
+  const k=p.attack.kills,e=p.attack.errors,ta=p.attack.total;
+  if(ta===0)return{str:'-',cls:''};
+  const v=(k-e)/ta;
+  return{
+    str:v.toFixed(3).replace(/^0/,''),
+    cls:v>=.300?'hit-great':v>=.200?'hit-good':v>=.100?'hit-avg':'hit-poor'
+  };
+}
+
+// ── Normalize player ──────────────────────────────────────────────────────────
 function normP(raw){
   const t=raw.total||{},s=t.skills||{},p=t.points||{},pct2=t.percentages||{},e=t.efficiencies||{},err=t.errors||{};
   const nm=[raw.name,raw.surname].filter(Boolean).join(' ')||raw.shirtName||'Unknown';
   return{
-    jersey:String(raw.shirtNumber??''),
-    name:nm,
-    shirt_name:raw.shirtName||nm,
-    libero:raw.libero||false,
-    captain:raw.captain||false,
-    positions:raw.positions||[],  // per-set: null/"1-6"/"*"
+    jersey:String(raw.shirtNumber??''),name:nm,shirt_name:raw.shirtName||nm,
+    libero:raw.libero||false,captain:raw.captain||false,
+    positions:raw.positions||[],
     sets_played:String((raw.positions||[]).filter(x=>x!==null).length),
     points:{total:p.total??0,side_out:p.sideOut??0,break_point:p.breakPoint??0},
     errors:{total:err.total??0},
     serve:{total:skS(s,'S'),aces:sk(s,'S','#'),errors:sk(s,'S','='),eff:e.S??''},
-    reception:{total:skS(s,'R'),errors:sk(s,'R','='),perfect:sk(s,'R','#'),pos_pct:pct2.R?.['#+']??'',perf_pct:pct2.R?.['#']??''},
+    reception:{total:skS(s,'R'),errors:sk(s,'R','='),perfect:sk(s,'R','#'),
+      pos_pct:pct2.R?.['#+']??'',perf_pct:pct2.R?.['#']??''},
     attack:{total:skS(s,'A'),kills:sk(s,'A','#'),errors:sk(s,'A','='),pct:e.A??''},
     block:{points:sk(s,'B','#'),errors:sk(s,'B','=')},
     digs:{total:sk(s,'D','#')},
     assists:t.assists??0,
-    // on-court state — populated by resolveCourtState() below
-    onCourt:false,
-    courtZone:0,       // 1-6 rotation zone, 0 = bench
-    isLibero:false,
-    isServing:false,
+    onCourt:false,courtZone:0,isLibero:false,isServing:false,
   };
 }
 
-// ── Court state resolution ──────────────────────────────────────────────────────
-// lineup_home/guest = [jersey#, jersey#, jersey#, jersey#, jersey#, jersey#]
-//   Index 0 = zone 1, index 1 = zone 2, ... index 5 = zone 6
-// libero_replacing_home/guest = jersey# of player the libero replaced
-// libero_number_home/guest = jersey# of the libero
-// serving_player_number = jersey# of current server (if serve === 'home'/'away')
-function resolveCourtState(players, lineup, liberoJersey, liberoReplacing, servingJersey, servingTeam, teamType){
-  // Build a map jersey -> player
-  const byJersey={};
-  players.forEach(p=>byJersey[String(p.jersey)]=p);
-
-  // Reset all
+// ── Court resolution ──────────────────────────────────────────────────────────
+function resolveCourtState(players,lineup,liberoJersey,servingJersey,isServingTeam){
+  const byJ={};players.forEach(p=>{byJ[String(p.jersey)]=p;});
   players.forEach(p=>{p.onCourt=false;p.courtZone=0;p.isLibero=false;p.isServing=false;});
-
-  if(!lineup||lineup.length===0) return;
-
-  lineup.forEach((jerseyNum,idx)=>{
-    const zone=idx+1; // zones 1-6
-    const jerseyStr=String(jerseyNum);
-    const p=byJersey[jerseyStr];
+  if(!lineup||lineup.length===0)return;
+  lineup.forEach((j,idx)=>{
+    const p=byJ[String(j)];
     if(p){
-      p.onCourt=true;
-      p.courtZone=zone;
-      // Mark libero
-      if(String(liberoJersey)===jerseyStr) p.isLibero=true;
-      // Mark server
-      if(servingTeam===teamType && String(servingJersey)===jerseyStr) p.isServing=true;
+      p.onCourt=true;p.courtZone=idx+1;
+      if(String(liberoJersey)===String(j))p.isLibero=true;
+      if(isServingTeam&&String(servingJersey)===String(j))p.isServing=true;
     }
   });
-
-  // The libero replaces someone — that player is on bench but show them as "L out"
-  // (no special flag needed; they'll just have onCourt=false naturally)
 }
 
 // ── API fetch ─────────────────────────────────────────────────────────────────
@@ -334,27 +547,33 @@ async function vsGet(path){
   const tok=document.getElementById('tok').value.trim();
   if(!useProxy){
     try{
-      const r=await fetch(`${API}/${path}`,{headers:{'Authorization':`Token ${tok}`,'Accept':'application/json'},signal:AbortSignal.timeout(8000)});
+      const r=await fetch(`${API}/${path}`,{
+        headers:{'Authorization':`Token ${tok}`,'Accept':'application/json'},
+        signal:AbortSignal.timeout(8000)
+      });
       if(r.ok){document.getElementById('cok').style.display='inline';return r.json();}
       if(r.status===401)throw new Error('HTTP 401 \u2014 check your API token');
       if(r.status===404)throw new Error('HTTP 404 \u2014 match ID not found');
       throw new Error(`HTTP ${r.status}`);
     }catch(e){if(e.message.includes('401')||e.message.includes('404'))throw e;useProxy=true;}
   }
-  const r=await fetch(`${PROXY}/vs?path=${encodeURIComponent(path)}&token=${encodeURIComponent(tok)}`,{signal:AbortSignal.timeout(8000)});
+  const r=await fetch(`${PROXY}/vs?path=${encodeURIComponent(path)}&token=${encodeURIComponent(tok)}`,
+    {signal:AbortSignal.timeout(8000)});
   if(!r.ok){const t=await r.text().catch(()=>'');throw new Error(`Proxy: HTTP ${r.status} ${t.slice(0,80)}`);}
   return r.json();
 }
 
-// ── Main fetch & build ────────────────────────────────────────────────────────
+// ── Build data ────────────────────────────────────────────────────────────────
 async function fetchAndRender(){
   const mid=getMid();if(!mid)return;
   try{
     setSt('loading','Fetching\u2026');
-    const[stats,match]=await Promise.all([vsGet(`match-stats-summary/${mid}`),vsGet(`Matches/${mid}?show_timer=1`)]);
+    const[stats,match]=await Promise.all([
+      vsGet(`match-stats-summary/${mid}`),
+      vsGet(`Matches/${mid}?show_timer=1`)
+    ]);
     curData=buildData(stats,match,mid);
-    render(curData);
-    renderXml();
+    render(curData);renderXml();
     setSt('live','Live');
     document.getElementById('upd').textContent='Updated '+new Date().toLocaleTimeString();
     hideErr();
@@ -367,26 +586,12 @@ function buildData(stats,match,mid){
   const sets=[];
   for(let i=1;i<=5;i++){const h=match[`Set${i}Home`]??0,a=match[`Set${i}Guest`]??0;if(h>0||a>0)sets.push({home:h,away:a});}
   const w=match.widget||{};
-
   const homePlayers=(stats.home?.players||[]).map(normP);
   const awayPlayers=(stats.away?.players||[]).map(normP);
-
-  // Resolve who is on court right now
-  resolveCourtState(
-    homePlayers, w.lineup_home||[],
-    w.libero_number_home, w.libero_replacing_home,
-    w.serving_player_number, w.serve, 'home'
-  );
-  resolveCourtState(
-    awayPlayers, w.lineup_guest||[],
-    w.libero_number_guest, w.libero_replacing_guest,
-    w.serving_player_number, w.serve, 'away'
-  );
-
-  // Build sorted on-court arrays (zone order 1-6)
+  resolveCourtState(homePlayers,w.lineup_home||[],w.libero_number_home,w.serving_player_number,w.serve==='home');
+  resolveCourtState(awayPlayers,w.lineup_guest||[],w.libero_number_guest,w.serving_player_number,w.serve==='away');
   const homeOnCourt=[...Array(6)].map((_,i)=>homePlayers.find(p=>p.courtZone===i+1)||null);
   const awayOnCourt=[...Array(6)].map((_,i)=>awayPlayers.find(p=>p.courtZone===i+1)||null);
-
   return{
     matchId:String(mid),timestamp:new Date().toISOString(),
     homeTeam:ht,awayTeam:at,sets,
@@ -395,137 +600,199 @@ function buildData(stats,match,mid){
     serve:w.serve||'',servingNum:String(w.serving_player_number??''),
     lineupHome:w.lineup_home||[],lineupAway:w.lineup_guest||[],
     liberoHome:String(w.libero_number_home??''),liberoAway:String(w.libero_number_guest??''),
-    liberoReplacingHome:String(w.libero_replacing_home??''),
-    liberoReplacingAway:String(w.libero_replacing_guest??''),
     timeouts:match.timeout_count||[2,2],subs:match.substitution_count||[6,6],
-    challenges:match.challenge_count||[2,2],
     setBalls:match.set_ball_count||[0,0],matchBalls:match.match_ball_count||[0,0],
     timer:match.timer||null,
-    homePlayers, awayPlayers,
-    homeOnCourt, awayOnCourt,
+    homePlayers,awayPlayers,homeOnCourt,awayOnCourt,
     homeTeamStats:normP({...(stats.home?.team||{}),name:'',surname:'',shirtNumber:'TEAM',positions:[]}),
     awayTeamStats:normP({...(stats.away?.team||{}),name:'',surname:'',shirtNumber:'TEAM',positions:[]}),
   };
 }
 
-// ── Render dashboard ──────────────────────────────────────────────────────────
+// ── Render ────────────────────────────────────────────────────────────────────
 function render(d){
   document.getElementById('empty').style.display='none';
-  document.getElementById('sh').style.display='flex';
+  ['sh','cds','tsRow','courtRow','hp','ap'].forEach(id=>{
+    document.getElementById(id).style.display='';
+  });
+  document.getElementById('sh').style.display='block';
   document.getElementById('cds').style.display='grid';
+  document.getElementById('tsRow').style.display='grid';
   document.getElementById('courtRow').style.display='grid';
   document.getElementById('hp').style.display='block';
   document.getElementById('ap').style.display='block';
 
+  applyTeamColors(d.homeTeam,d.awayTeam);
+
+  // Logos
+  const hl=teamLogo(d.homeTeam),al=teamLogo(d.awayTeam);
+  const hImg=document.getElementById('hLogo'),aImg=document.getElementById('aLogo');
+  const hSmImg=document.getElementById('hLogoSm'),aSmImg=document.getElementById('aLogoSm');
+  [hImg,hSmImg].forEach(el=>{if(el){el.src=hl;el.alt=d.homeTeam+' logo';}});
+  [aImg,aSmImg].forEach(el=>{if(el){el.src=al;el.alt=d.awayTeam+' logo';}});
+
   // Score
-  const hw=d.wonHome,aw=d.wonAway;
   document.getElementById('hn').textContent=d.homeTeam;
   document.getElementById('an').textContent=d.awayTeam;
-  const he=document.getElementById('hs'),ae=document.getElementById('aws');
-  he.textContent=hw;ae.textContent=aw;
-  he.className='sv'+(hw>aw?' ld':'');ae.className='sv'+(aw>hw?' ld':'');
+  const he=document.getElementById('hs'),ae=document.getElementById('as2');
+  he.textContent=d.wonHome;ae.textContent=d.wonAway;
 
-  document.getElementById('ch').innerHTML=d.sets.map(s=>
-    `<div class="chip"><span class="${s.home>s.away?'w':''}">${s.home}</span>-<span class="${s.away>s.home?'w':''}">${s.away}</span></div>`
-  ).join('');
+  // Set chips
+  document.getElementById('ch').innerHTML=d.sets.map((s,i)=>{
+    const hw=s.home>s.away,aw2=s.away>s.home;
+    const cur=i===d.sets.length-1;
+    return `<div class="chip${cur?' active':''}" aria-label="Set ${i+1}: ${s.home} to ${s.away}">
+      <span class="${hw?'w':''}">${s.home}</span>-<span class="${aw2?'w':''}">${s.away}</span>
+    </div>`;
+  }).join('');
 
+  // Live indicators
   const iH=[];
-  if(d.serve==='home')iH.push(`<span class="ind ih">&#9654; ${d.homeTeam.split(' ')[0]} Serve #${d.servingNum}</span>`);
-  if(d.serve==='away')iH.push(`<span class="ind ia">&#9654; ${d.awayTeam.split(' ')[0]} Serve #${d.servingNum}</span>`);
+  if(d.serve==='home')iH.push(`<span class="ind ih">&#9654; ${d.homeTeam.split(' ')[0]} Serve${d.servingNum?' #'+d.servingNum:''}</span>`);
+  if(d.serve==='away')iH.push(`<span class="ind ia">&#9654; ${d.awayTeam.split(' ')[0]} Serve${d.servingNum?' #'+d.servingNum:''}</span>`);
   if(d.setBalls[0]>0)iH.push(`<span class="ind ib">Set Ball x${d.setBalls[0]}</span>`);
   if(d.setBalls[1]>0)iH.push(`<span class="ind ib">Set Ball x${d.setBalls[1]}</span>`);
-  if(d.matchBalls[0]>0||d.matchBalls[1]>0)iH.push('<span class="ind im">Match Ball</span>');
-  if(d.timer?.timer_type==='timeout')iH.push('<span class="ind it">Timeout</span>');
+  if(d.matchBalls[0]>0||d.matchBalls[1]>0)iH.push('<span class="ind im">&#127942; Match Ball</span>');
+  if(d.timer?.timer_type==='timeout')iH.push('<span class="ind it">&#9201; Timeout</span>');
   if(d.timer?.timer_type==='setBreak')iH.push('<span class="ind it">Set Break</span>');
   if(d.timer?.timer_type==='technical')iH.push('<span class="ind it">Technical TO</span>');
   iH.push(`<span class="ind is">Set ${d.curSet}</span>`);
   document.getElementById('ind').innerHTML=iH.join('');
 
+  // Cards
   document.getElementById('hto').textContent=d.timeouts[0];
   document.getElementById('ato').textContent=d.timeouts[1];
   document.getElementById('hsub').textContent=d.subs[0];
   document.getElementById('asub').textContent=d.subs[1];
+  const ocFmt=oc=>oc.map(p=>p?`<span style="color:var(--gn);font-weight:700">${p.jersey}</span>`:'-').join(' ');
+  document.getElementById('hlu').innerHTML=d.homeOnCourt.some(Boolean)?ocFmt(d.homeOnCourt):'Not started';
+  document.getElementById('alu').innerHTML=d.awayOnCourt.some(Boolean)?ocFmt(d.awayOnCourt):'Not started';
 
-  // On-court summary (jersey numbers in zone order)
-  const ocSummary=oc=>oc.map((p,i)=>p?`<span style="color:var(--gn);font-weight:700">${p.jersey}</span>`:'-').join(' ');
-  document.getElementById('hlu').innerHTML=d.homeOnCourt.some(Boolean)?ocSummary(d.homeOnCourt):'Not started';
-  document.getElementById('alu').innerHTML=d.awayOnCourt.some(Boolean)?ocSummary(d.awayOnCourt):'Not started';
+  // Team stats bars
+  renderTeamStats(d);
 
   // Court grids
   document.getElementById('hCourtName').textContent=d.homeTeam;
   document.getElementById('aCourtName').textContent=d.awayTeam;
-  renderCourtGrid('hCourtGrid',d.homeOnCourt,d.serve==='home',d.servingNum);
-  renderCourtGrid('aCourtGrid',d.awayOnCourt,d.serve==='away',d.servingNum);
+  renderCourtGrid('hCourtGrid',d.homeOnCourt,d.serve==='home',d.servingNum,d.homeTeam);
+  renderCourtGrid('aCourtGrid',d.awayOnCourt,d.serve==='away',d.servingNum,d.awayTeam);
 
-  // Team tables
+  // Tables
   document.getElementById('hpn').textContent=d.homeTeam;
   document.getElementById('apn').textContent=d.awayTeam;
-  renderAgg('hag',d.homeTeamStats);renderAgg('aag',d.awayTeamStats);
+  renderAgg('hag',d.homeTeamStats,d.homeTeam);
+  renderAgg('aag',d.awayTeamStats,d.awayTeam);
   renderTbl('hbd',d.homePlayers,d.serve==='home',d.servingNum);
   renderTbl('abd',d.awayPlayers,d.serve==='away',d.servingNum);
 }
 
-// Volleyball court zone layout:
-//   Back row (from left):  zone 5 | zone 6 | zone 1
-//   Front row (from left): zone 4 | zone 3 | zone 2
-// We display in grid order matching a standard volleyball diagram
-const ZONE_DISPLAY_ORDER=[4,3,2,5,6,1]; // front-left to back-right
+// ── Team stats bars ───────────────────────────────────────────────────────────
+function renderTeamStats(d){
+  document.getElementById('tsHName').textContent=d.homeTeam;
+  document.getElementById('tsAName').textContent=d.awayTeam;
+  document.getElementById('tsCurSet').textContent=`Set ${d.curSet}`;
+  const ht=d.homeTeamStats,at=d.awayTeamStats;
+  const stats=[
+    ['Kills',     ht.attack.kills,  at.attack.kills],
+    ['Aces',      ht.serve.aces,    at.serve.aces],
+    ['Blocks',    ht.block.points,  at.block.points],
+    ['Digs',      ht.digs.total,    at.digs.total],
+    ['Errors',    ht.errors.total,  at.errors.total],
+  ];
+  const hc=teamColor(d.homeTeam,'primary'),ac=teamColor(d.awayTeam,'primary');
+  const mkBars=(side,stats,isHome)=>{
+    return stats.map(([lbl,hv,av])=>{
+      const val=isHome?hv:av,opp=isHome?av:hv;
+      const max=Math.max(hv,av,1);
+      const pct=(val/max*100).toFixed(1);
+      const isWinner=val>opp;
+      return `<div class="ts-stat">
+        <span class="ts-lbl">${lbl}</span>
+        <div class="ts-bar-wrap" aria-label="${lbl}: ${val}">
+          <div class="ts-bar" style="width:${pct}%;background:${isHome?hc:ac};opacity:${isWinner?1:.6}"></div>
+        </div>
+        <span class="ts-val" style="color:${isWinner?'var(--tb)':'var(--mt)'}">${val}</span>
+      </div>`;
+    }).join('');
+  };
+  document.getElementById('tsHomeBars').innerHTML=mkBars('home',stats,true);
+  document.getElementById('tsAwayBars').innerHTML=mkBars('away',stats,false);
+}
 
-function renderCourtGrid(id,onCourt,isServingTeam,servingJersey){
-  const el=document.getElementById(id);
-  el.innerHTML=ZONE_DISPLAY_ORDER.map(zone=>{
-    const p=onCourt[zone-1]; // onCourt[0]=zone1, [1]=zone2, etc.
+// ── Court grid ────────────────────────────────────────────────────────────────
+// Volleyball court zones - display front row first, back row second
+// Front: 4(left) 3(middle) 2(right)
+// Back:  5(left) 6(middle) 1(right)
+const ZONE_ORDER=[4,3,2,5,6,1];
+function renderCourtGrid(id,onCourt,isServTeam,servNum,teamName){
+  const color=teamColor(teamName,'primary');
+  document.getElementById(id).innerHTML=ZONE_ORDER.map(zone=>{
+    const p=onCourt[zone-1];
     if(!p){
-      return `<div class="court-zone empty"><span class="zone-num">${zone}</span><div class="zone-jersey" style="color:var(--mt)">&#8212;</div></div>`;
+      return `<div class="court-zone empty" role="listitem" aria-label="Zone ${zone}: empty">
+        <span class="zone-num" aria-hidden="true">${zone}</span>
+        <div class="zone-jersey" style="color:var(--mt)" aria-hidden="true">&#8212;</div>
+      </div>`;
     }
-    const isServ=isServingTeam&&String(p.jersey)===String(servingJersey);
-    const cls=p.isLibero?'court-zone libero-zone':isServ?'court-zone serving':'court-zone on-court';
-    const statLine=p.attack.kills>0?`${p.attack.kills}K`:p.serve.aces>0?`${p.serve.aces}A`:p.block.points>0?`${p.block.points}B`:p.digs.total>0?`${p.digs.total}D`:p.assists>0?`${p.assists}Ast`:'';
-    return `<div class="${cls}">
-      <span class="zone-num">${zone}</span>
-      <div class="zone-jersey">#${p.jersey}${p.isLibero?'<span class="zone-lib-badge">L</span>':''}${isServ?'<span class="zone-serve-badge">SRV</span>':''}</div>
+    const isServ=isServTeam&&String(p.jersey)===String(servNum);
+    const cls=p.isLibero?'court-zone lib-zone':isServ?'court-zone serving':'court-zone on-court';
+    const hp=hitPct(p);
+    const topStat=p.attack.kills>0?`${p.attack.kills}K ${hp.str}`
+      :p.serve.aces>0?`${p.serve.aces} Aces`
+      :p.block.points>0?`${p.block.points} Blk`
+      :p.digs.total>0?`${p.digs.total} Digs`
+      :p.assists>0?`${p.assists} Ast`:'';
+    const ariaLabel=`Zone ${zone}: #${p.jersey} ${p.name}${p.isLibero?' (Libero)':''}${isServ?' (Serving)':''}`;
+    return `<div class="${cls}" role="listitem" aria-label="${ariaLabel}"
+        style="${(p.isLibero||isServ||p.onCourt)?'border-color:'+color+'66':''};--zone-accent:${color}">
+      <span class="zone-num" aria-hidden="true">${zone}</span>
+      <div class="zone-jersey">#${p.jersey}${p.isLibero?'<span class="badge badge-l" aria-hidden="true">L</span>':''}${isServ?'<span class="badge badge-s" aria-hidden="true">SRV</span>':''}</div>
       <div class="zone-name">${p.shirt_name||p.name}</div>
-      ${statLine?`<div class="zone-stat">${statLine}</div>`:''}
+      ${topStat?`<div class="zone-stat">${topStat}</div>`:''}
     </div>`;
   }).join('');
 }
 
-function renderAgg(id,s){
+function renderAgg(id,s,teamName){
+  const c=teamColor(teamName,'primary');
   document.getElementById(id).innerHTML=[['K',s.attack.kills],['ACE',s.serve.aces],['BLK',s.block.points],['DIG',s.digs.total],['ERR',s.errors.total]]
-    .map(([l,v])=>`<div style="text-align:center"><div class="agv">${v}</div><div class="agl">${l}</div></div>`).join('');
+    .map(([l,v])=>`<div style="text-align:center">
+      <div class="agv" style="color:${c}">${v}</div>
+      <div class="agl">${l}</div>
+    </div>`).join('');
 }
 
-function renderTbl(id,players,isServingTeam,servingJersey){
-  // Sort: on-court first (by zone), then bench
+function renderTbl(id,players,isServTeam,servNum){
   const sorted=[...players].sort((a,b)=>{
-    if(a.onCourt&&!b.onCourt)return -1;
-    if(!a.onCourt&&b.onCourt)return 1;
+    if(a.onCourt&&!b.onCourt)return -1;if(!a.onCourt&&b.onCourt)return 1;
     if(a.onCourt&&b.onCourt)return a.courtZone-b.courtZone;
     return 0;
   });
   document.getElementById(id).innerHTML=sorted.map(p=>{
-    const isServ=isServingTeam&&String(p.jersey)===String(servingJersey);
-    const rowCls=isServ?'serving-row':p.onCourt?'on-court-row':'';
+    const isServ=isServTeam&&String(p.jersey)===String(servNum);
+    const rowCls=isServ?'srv-row':p.onCourt?'oc-row':'';
     let courtBadge='';
-    if(p.isLibero) courtBadge='<span class="oc-badge oc-lib">LIB</span>';
-    else if(isServ) courtBadge='<span class="oc-badge oc-serve">SRV</span>';
-    else if(p.onCourt) courtBadge=`<span class="oc-badge oc-on">Z${p.courtZone}</span>`;
-    else courtBadge='<span class="oc-bench">bench</span>';
+    if(p.isLibero) courtBadge='<span class="oc-badge oc-lib" aria-label="Libero">LIB</span>';
+    else if(isServ) courtBadge='<span class="oc-badge oc-srv" aria-label="Currently serving">SRV</span>';
+    else if(p.onCourt) courtBadge=`<span class="oc-badge oc-on" aria-label="Zone ${p.courtZone}">Z${p.courtZone}</span>`;
+    else courtBadge='<span class="oc-bench" aria-label="On bench">bench</span>';
+    const hp=hitPct(p);
+    const spCls=p.sets_played==='0'?'z':'';
     return `<tr class="${rowCls}">
       <td>${p.jersey}</td>
-      <td>${p.shirt_name||p.name}${p.captain?'<span style="color:var(--gd);font-size:9px;margin-left:3px">&copy;</span>':''}</td>
+      <td>${p.shirt_name||p.name}${p.captain?'<span style="color:var(--gd);font-size:9px;margin-left:3px" aria-label="Captain">&copy;</span>':''}</td>
       <td>${courtBadge}</td>
-      <td class="${p.sets_played==='0'?'z':''}">${p.sets_played}</td>
+      <td class="${spCls}">${p.sets_played}</td>
       <td class="${nc(p.points.total)}">${p.points.total}</td>
+      <td class="${nc(p.attack.kills)}">${p.attack.kills}</td>
+      <td class="${p.attack.errors>0?'eb':'z'}">${p.attack.errors||'-'}</td>
+      <td class="${p.attack.total===0?'z':''}">${p.attack.total||'-'}</td>
+      <td class="${hp.cls}">${hp.str}</td>
       <td class="${nc(p.serve.aces)}">${p.serve.aces}</td>
       <td class="${p.serve.errors>0?'eb':'z'}">${p.serve.errors||'-'}</td>
       <td class="${p.reception.total===0?'z':''}">${p.reception.total||'-'}</td>
       <td>${p.reception.total?pctFmt(p.reception.pos_pct):'-'}</td>
       <td>${p.reception.total?pctFmt(p.reception.perf_pct):'-'}</td>
-      <td class="${p.attack.total===0?'z':''}">${p.attack.total||'-'}</td>
-      <td class="${nc(p.attack.kills)}">${p.attack.kills}</td>
-      <td class="${p.attack.errors>0?'eb':'z'}">${p.attack.errors||'-'}</td>
-      <td class="${effCls(p.attack.pct)}">${p.attack.pct?(parseFloat(p.attack.pct)*100).toFixed(1)+'%':'-'}</td>
       <td class="${nc(p.block.points)}">${p.block.points}</td>
       <td class="${p.digs.total===0?'z':''}">${p.digs.total||'-'}</td>
       <td class="${p.assists===0?'z':''}">${p.assists||'-'}</td>
@@ -534,22 +801,23 @@ function renderTbl(id,players,isServingTeam,servingJersey){
 }
 
 // ── XML builders ──────────────────────────────────────────────────────────────
-// Xpression: flat DataPool key=value
-// Structure:
-//   Match/game state fields
-//   HOME_COURT_Z1_* through HOME_COURT_Z6_* — exactly who is in each zone RIGHT NOW
-//   HOME_P1_* through HOME_Pn_* — all players sorted: on-court first, then bench
-//   AWAY_* same pattern
-function buildXpression(d){
-  const L=[];
-  const a=(id,v)=>L.push(`  <Data id="${id}">${esc(v)}</Data>`);
+function hitPctStr(p){
+  const k=p.attack.kills,e=p.attack.errors,ta=p.attack.total;
+  if(ta===0)return'.000';
+  return((k-e)/ta).toFixed(3);
+}
 
-  // Game state
+function buildXpression(d){
+  const L=[];const a=(id,v)=>L.push(`  <Data id="${esc(id)}">${esc(v)}</Data>`);
   a('MATCH_ID',d.matchId);a('TIMESTAMP',d.timestamp);
   a('HOME_TEAM_NAME',d.homeTeam);a('AWAY_TEAM_NAME',d.awayTeam);
-  a('CURRENT_SET',d.curSet);
+  a('HOME_TEAM_COLOR',teamColor(d.homeTeam,'primary'));
+  a('AWAY_TEAM_COLOR',teamColor(d.awayTeam,'primary'));
+  a('HOME_TEAM_COLOR2',teamColor(d.homeTeam,'secondary'));
+  a('AWAY_TEAM_COLOR2',teamColor(d.awayTeam,'secondary'));
+  a('HOME_TEAM_LOGO',teamLogo(d.homeTeam));a('AWAY_TEAM_LOGO',teamLogo(d.awayTeam));
+  a('CURRENT_SET',d.curSet);a('SERVE_TEAM',d.serve);a('SERVING_PLAYER_JERSEY',d.servingNum);
   a('HOME_SET_WINS',d.wonHome);a('AWAY_SET_WINS',d.wonAway);
-  a('SERVE_TEAM',d.serve);a('SERVING_PLAYER_JERSEY',d.servingNum);
   a('HOME_TIMEOUTS_LEFT',d.timeouts[0]);a('AWAY_TIMEOUTS_LEFT',d.timeouts[1]);
   a('HOME_SUBS_LEFT',d.subs[0]);a('AWAY_SUBS_LEFT',d.subs[1]);
   a('HOME_SET_BALLS',d.setBalls[0]);a('AWAY_SET_BALLS',d.setBalls[1]);
@@ -558,29 +826,31 @@ function buildXpression(d){
   if(d.timer){a('TIMER_TYPE',d.timer.timer_type);a('TIMER_DURATION',d.timer.duration);}
   d.sets.forEach((s,i)=>{a(`SET${i+1}_HOME`,s.home);a(`SET${i+1}_AWAY`,s.away);});
 
-  L.push('');
-  L.push('  <!-- ON-COURT ZONES: bind these directly to scoreboard templates -->');
-  L.push('  <!-- Zone 1=right-back  Zone 2=right-front  Zone 3=middle-front -->');
-  L.push('  <!-- Zone 4=left-front  Zone 5=left-back    Zone 6=middle-back  -->');
+  // Team totals
+  const addTeamTotals=(pfx,ts)=>{
+    a(`${pfx}_TEAM_KILLS`,ts.attack.kills);a(`${pfx}_TEAM_ACES`,ts.serve.aces);
+    a(`${pfx}_TEAM_BLOCKS`,ts.block.points);a(`${pfx}_TEAM_DIGS`,ts.digs.total);
+    a(`${pfx}_TEAM_ERRORS`,ts.errors.total);a(`${pfx}_TEAM_POINTS`,ts.points.total);
+    a(`${pfx}_TEAM_HIT_PCT`,hitPctStr(ts));
+  };
+  L.push('');L.push('  <!-- TEAM TOTALS -->');
+  addTeamTotals('HOME',d.homeTeamStats);addTeamTotals('AWAY',d.awayTeamStats);
 
-  // Per-team zone slots (the primary binding point for scoreboards)
-  const addZones=(pfx,onCourt,isServTeam,servNum)=>{
+  // Zone slots
+  L.push('');L.push('  <!-- ON-COURT ZONE SLOTS (use these for live scoreboard templates) -->');
+  L.push('  <!-- Zones: 1=right-back  2=right-front  3=middle-front  4=left-front  5=left-back  6=middle-back -->');
+  const addZones=(pfx,onCourt,isServ,sNum)=>{
     for(let z=1;z<=6;z++){
-      const p=onCourt[z-1];
-      const pf=`${pfx}_COURT_Z${z}`;
-      a(`${pf}_JERSEY`,p?.jersey||'');
-      a(`${pf}_NAME`,p?.name||'');
-      a(`${pf}_SHIRT_NAME`,p?.shirt_name||'');
-      a(`${pf}_LIBERO`,p?.isLibero?'1':'0');
-      a(`${pf}_SERVING`,(isServTeam&&p&&String(p.jersey)===String(servNum))?'1':'0');
-      a(`${pf}_PTS`,p?String(p.points.total):'');
-      a(`${pf}_KILLS`,p?String(p.attack.kills):'');
-      a(`${pf}_ACES`,p?String(p.serve.aces):'');
-      a(`${pf}_BLK_PTS`,p?String(p.block.points):'');
+      const p=onCourt[z-1];const pf=`${pfx}_COURT_Z${z}`;
+      const serving=isServ&&p&&String(p.jersey)===String(sNum)?'1':'0';
+      a(`${pf}_JERSEY`,p?.jersey||'');a(`${pf}_NAME`,p?.name||'');a(`${pf}_SHIRT_NAME`,p?.shirt_name||'');
+      a(`${pf}_LIBERO`,p?.isLibero?'1':'0');a(`${pf}_SERVING`,serving);
+      a(`${pf}_PTS`,p?String(p.points.total):'');a(`${pf}_KILLS`,p?String(p.attack.kills):'');
+      a(`${pf}_ACES`,p?String(p.serve.aces):'');a(`${pf}_BLK_PTS`,p?String(p.block.points):'');
       a(`${pf}_DIGS`,p?String(p.digs.total):'');
+      a(`${pf}_HIT_PCT`,p?hitPctStr(p):'');
       a(`${pf}_REC_POS_PCT`,p?pctFmt(p.reception.pos_pct):'');
       a(`${pf}_REC_PERF_PCT`,p?pctFmt(p.reception.perf_pct):'');
-      a(`${pf}_ATK_EFF`,p?(p.attack.pct?(parseFloat(p.attack.pct)*100).toFixed(1)+'%':''):'');
     }
   };
   L.push('');L.push('  <!-- HOME COURT ZONES -->');
@@ -588,46 +858,41 @@ function buildXpression(d){
   L.push('');L.push('  <!-- AWAY COURT ZONES -->');
   addZones('AWAY',d.awayOnCourt,d.serve==='away',d.servingNum);
 
-  L.push('');
-  L.push('  <!-- ALL PLAYERS: on-court first (P1=Z1 through P6=Z6), then bench -->');
-
-  // All players: on-court (sorted by zone) then bench
-  const addAllPlayers=(pfx,players,isServTeam,servNum)=>{
+  // All players
+  const addAllPlayers=(pfx,players,isServ,sNum)=>{
     const sorted=[...players].sort((a,b)=>{
       if(a.onCourt&&!b.onCourt)return -1;if(!a.onCourt&&b.onCourt)return 1;
       if(a.onCourt&&b.onCourt)return a.courtZone-b.courtZone;return 0;
     });
     sorted.forEach((p,i)=>{
       const n=i+1,pf=`${pfx}_P${n}`;
-      const isServ=isServTeam&&String(p.jersey)===String(servNum);
+      const isS=isServ&&String(p.jersey)===String(sNum);
       a(`${pf}_JERSEY`,p.jersey);a(`${pf}_NAME`,p.name);a(`${pf}_SHIRT_NAME`,p.shirt_name);
-      a(`${pf}_ON_COURT`,p.onCourt?'1':'0');
-      a(`${pf}_COURT_ZONE`,p.onCourt?String(p.courtZone):'0');
-      a(`${pf}_LIBERO`,p.isLibero?'1':'0');
-      a(`${pf}_SERVING`,isServ?'1':'0');
+      a(`${pf}_ON_COURT`,p.onCourt?'1':'0');a(`${pf}_COURT_ZONE`,p.onCourt?String(p.courtZone):'0');
+      a(`${pf}_LIBERO`,p.isLibero?'1':'0');a(`${pf}_SERVING`,isS?'1':'0');
       a(`${pf}_SP`,p.sets_played);
       a(`${pf}_PTS`,p.points.total);a(`${pf}_PTS_SO`,p.points.side_out);a(`${pf}_PTS_BP`,p.points.break_point);
+      a(`${pf}_KILLS`,p.attack.kills);a(`${pf}_ATK_ERR`,p.attack.errors);a(`${pf}_ATK_TOT`,p.attack.total);
+      a(`${pf}_HIT_PCT`,hitPctStr(p));
       a(`${pf}_ACES`,p.serve.aces);a(`${pf}_SERVE_ERR`,p.serve.errors);
       a(`${pf}_REC_TOT`,p.reception.total);a(`${pf}_REC_POS_PCT`,pctFmt(p.reception.pos_pct));a(`${pf}_REC_PERF_PCT`,pctFmt(p.reception.perf_pct));
-      a(`${pf}_ATK_TOT`,p.attack.total);a(`${pf}_KILLS`,p.attack.kills);a(`${pf}_ATK_ERR`,p.attack.errors);
-      a(`${pf}_ATK_EFF`,p.attack.pct?(parseFloat(p.attack.pct)*100).toFixed(1)+'%':'');
       a(`${pf}_BLK_PTS`,p.block.points);a(`${pf}_DIGS`,p.digs.total);a(`${pf}_ASSISTS`,p.assists);
     });
   };
-  L.push('');L.push('  <!-- HOME PLAYERS (P1-P6 on court, remaining on bench) -->');
+  L.push('');L.push('  <!-- HOME PLAYERS (P1-P6 on court by zone, then bench) -->');
   addAllPlayers('HOME',d.homePlayers,d.serve==='home',d.servingNum);
-  L.push('');L.push('  <!-- AWAY PLAYERS (P1-P6 on court, remaining on bench) -->');
+  L.push('');L.push('  <!-- AWAY PLAYERS (P1-P6 on court by zone, then bench) -->');
   addAllPlayers('AWAY',d.awayPlayers,d.serve==='away',d.servingNum);
 
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<!-- Ross Xpression DataPool | MLV Live Stats | Match ${esc(d.matchId)} | ${d.timestamp} -->\n<!-- HOME_COURT_Z1 through Z6 = current on-court players by rotation zone -->\n<!-- HOME_P1 through P6 = on-court players; P7+ = bench -->\n<DataPool>\n${L.join('\n')}\n</DataPool>`;
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<!-- Ross Xpression DataPool | MLV Live Stats | Match ${esc(d.matchId)} | ${d.timestamp} -->\n<!-- HOME/AWAY_COURT_Z1 thru Z6 = current on-court players by rotation zone -->\n<!-- HIT_PCT = (Kills-Errors)/TotalAttempts -->\n<DataPool>\n${L.join('\n')}\n</DataPool>`;
 }
 
-// Daktronics: hierarchical RTD
 function buildDaktronics(d){
   const L=[];
   L.push(`<?xml version="1.0" encoding="UTF-8"?>`);
   L.push(`<!-- Daktronics RTD | MLV Live Stats | Match ${esc(d.matchId)} | ${d.timestamp} -->`);
-  L.push(`<!-- CourtZone 1-6 nodes = current rotation. onCourt="1" in Players section -->`);
+  L.push(`<!-- CourtZone 1-6 = current rotation. onCourt/courtZone attrs on Player nodes -->`);
+  L.push(`<!-- HitPct = (Kills-Errors)/TotalAttempts -->`);
   L.push(`<RTD sport="Volleyball" version="2.0">`);
   L.push(`  <Game id="${esc(d.matchId)}" timestamp="${d.timestamp}">`);
   L.push(`    <State>`);
@@ -643,106 +908,169 @@ function buildDaktronics(d){
   d.sets.forEach((s,i)=>L.push(`      <Set num="${i+1}" home="${s.home}" away="${s.away}" />`));
   L.push(`    </Sets>`);
 
-  const addTeam=(type,nm,wins,players,onCourt,ts,libJersey,isServTeam,servNum)=>{
+  const addTeam=(type,nm,wins,players,onCourt,ts,lu,libJ,isServ,sNum)=>{
+    const color=teamColor(nm,'primary'),color2=teamColor(nm,'secondary'),logo=teamLogo(nm);
     L.push(`    <Team type="${type}">`);
     L.push(`      <n>${esc(nm)}</n>`);
     L.push(`      <SetWins>${wins}</SetWins>`);
-    L.push(`      <Libero jersey="${esc(libJersey)}" />`);
+    L.push(`      <PrimaryColor>${esc(color)}</PrimaryColor>`);
+    L.push(`      <SecondaryColor>${esc(color2)}</SecondaryColor>`);
+    L.push(`      <LogoURL>${esc(logo)}</LogoURL>`);
+    L.push(`      <Libero jersey="${esc(libJ)}" />`);
     L.push(`      <TeamStats>`);
     L.push(`        <Points>${ts.points.total}</Points><Kills>${ts.attack.kills}</Kills>`);
     L.push(`        <Aces>${ts.serve.aces}</Aces><Blocks>${ts.block.points}</Blocks>`);
     L.push(`        <Digs>${ts.digs.total}</Digs><Errors>${ts.errors.total}</Errors>`);
+    L.push(`        <HitPct>${hitPctStr(ts)}</HitPct>`);
     L.push(`      </TeamStats>`);
-
-    // Current court — zone-indexed, for direct scoreboard binding
     L.push(`      <Court>`);
     L.push(`        <!-- Zone 1=right-back  2=right-front  3=middle-front  4=left-front  5=left-back  6=middle-back -->`);
     for(let z=1;z<=6;z++){
       const p=onCourt[z-1];
-      const isServ=isServTeam&&p&&String(p.jersey)===String(servNum);
+      const srv=isServ&&p&&String(p.jersey)===String(sNum)?'1':'0';
       if(p){
-        L.push(`        <Zone num="${z}" jersey="${esc(p.jersey)}" libero="${p.isLibero?'1':'0'}" serving="${isServ?'1':'0'}">`);
-        L.push(`          <n>${esc(p.name)}</n>`);
-        L.push(`          <ShirtName>${esc(p.shirt_name)}</ShirtName>`);
-        L.push(`          <Points>${p.points.total}</Points>`);
-        L.push(`          <Kills>${p.attack.kills}</Kills>`);
-        L.push(`          <Aces>${p.serve.aces}</Aces>`);
-        L.push(`          <BlockPoints>${p.block.points}</BlockPoints>`);
+        L.push(`        <Zone num="${z}" jersey="${esc(p.jersey)}" libero="${p.isLibero?'1':'0'}" serving="${srv}">`);
+        L.push(`          <n>${esc(p.name)}</n><ShirtName>${esc(p.shirt_name)}</ShirtName>`);
+        L.push(`          <Points>${p.points.total}</Points><Kills>${p.attack.kills}</Kills>`);
+        L.push(`          <HitPct>${hitPctStr(p)}</HitPct>`);
+        L.push(`          <Aces>${p.serve.aces}</Aces><BlockPoints>${p.block.points}</BlockPoints>`);
         L.push(`          <Digs>${p.digs.total}</Digs>`);
         L.push(`          <RecPositivePct>${pctFmt(p.reception.pos_pct)}</RecPositivePct>`);
         L.push(`          <RecPerfectPct>${pctFmt(p.reception.perf_pct)}</RecPerfectPct>`);
-        L.push(`          <AttackEff>${p.attack.pct?(parseFloat(p.attack.pct)*100).toFixed(1)+'%':'-'}</AttackEff>`);
         L.push(`        </Zone>`);
       }else{
         L.push(`        <Zone num="${z}" jersey="" libero="0" serving="0" />`);
       }
     }
     L.push(`      </Court>`);
-
-    // Full roster (on-court sorted first)
     const sorted=[...players].sort((a,b)=>{
       if(a.onCourt&&!b.onCourt)return -1;if(!a.onCourt&&b.onCourt)return 1;
       if(a.onCourt&&b.onCourt)return a.courtZone-b.courtZone;return 0;
     });
     L.push(`      <Players>`);
     sorted.forEach((p,i)=>{
-      const isServ=isServTeam&&String(p.jersey)===String(servNum);
-      L.push(`        <Player seq="${i+1}" jersey="${esc(p.jersey)}" onCourt="${p.onCourt?'1':'0'}" courtZone="${p.onCourt?p.courtZone:'0'}" libero="${p.isLibero?'1':'0'}" serving="${isServ?'1':'0'}">`);
-      L.push(`          <n>${esc(p.name)}</n><ShirtName>${esc(p.shirt_name)}</ShirtName>`);
-      L.push(`          <SetsPlayed>${p.sets_played}</SetsPlayed>`);
+      const srv=isServ&&String(p.jersey)===String(sNum)?'1':'0';
+      L.push(`        <Player seq="${i+1}" jersey="${esc(p.jersey)}" onCourt="${p.onCourt?'1':'0'}" courtZone="${p.onCourt?p.courtZone:'0'}" libero="${p.isLibero?'1':'0'}" serving="${srv}">`);
+      L.push(`          <n>${esc(p.name)}</n><ShirtName>${esc(p.shirt_name)}</ShirtName><SetsPlayed>${p.sets_played}</SetsPlayed>`);
       L.push(`          <Points total="${p.points.total}" sideOut="${p.points.side_out}" breakPoint="${p.points.break_point}" />`);
-      L.push(`          <Serve><Aces>${p.serve.aces}</Aces><Errors>${p.serve.errors}</Errors></Serve>`);
-      L.push(`          <Reception><Total>${p.reception.total}</Total><PositivePct>${pctFmt(p.reception.pos_pct)}</PositivePct><PerfectPct>${pctFmt(p.reception.perf_pct)}</PerfectPct></Reception>`);
-      L.push(`          <Attack><Total>${p.attack.total}</Total><Kills>${p.attack.kills}</Kills><Errors>${p.attack.errors}</Errors><Eff>${p.attack.pct?(parseFloat(p.attack.pct)*100).toFixed(1)+'%':'-'}</Eff></Attack>`);
-      L.push(`          <Block><Points>${p.block.points}</Points></Block>`);
-      L.push(`          <Digs>${p.digs.total}</Digs><Assists>${p.assists}</Assists>`);
+      L.push(`          <Attack total="${p.attack.total}" kills="${p.attack.kills}" errors="${p.attack.errors}" hitPct="${hitPctStr(p)}" />`);
+      L.push(`          <Serve aces="${p.serve.aces}" errors="${p.serve.errors}" />`);
+      L.push(`          <Reception total="${p.reception.total}" posPct="${pctFmt(p.reception.pos_pct)}" perfPct="${pctFmt(p.reception.perf_pct)}" />`);
+      L.push(`          <Block points="${p.block.points}" /><Digs>${p.digs.total}</Digs><Assists>${p.assists}</Assists>`);
       L.push(`        </Player>`);
     });
     L.push(`      </Players>`);
     L.push(`    </Team>`);
   };
 
-  addTeam('home',d.homeTeam,d.wonHome,d.homePlayers,d.homeOnCourt,d.homeTeamStats,d.liberoHome,d.serve==='home',d.servingNum);
-  addTeam('away',d.awayTeam,d.wonAway,d.awayPlayers,d.awayOnCourt,d.awayTeamStats,d.liberoAway,d.serve==='away',d.servingNum);
-  L.push(`  </Game>`);
-  L.push(`</RTD>`);
+  addTeam('home',d.homeTeam,d.wonHome,d.homePlayers,d.homeOnCourt,d.homeTeamStats,d.lineupHome,d.liberoHome,d.serve==='home',d.servingNum);
+  addTeam('away',d.awayTeam,d.wonAway,d.awayPlayers,d.awayOnCourt,d.awayTeamStats,d.lineupAway,d.liberoAway,d.serve==='away',d.servingNum);
+  L.push(`  </Game></RTD>`);
   return L.join('\n');
 }
 
+// ── XML panel ─────────────────────────────────────────────────────────────────
 function synHL(xml){
   return xml.replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .replace(/(&lt;\/?[\w:-]+)/g,'<span class="tg">$1</span>')
     .replace(/(\w[-\w]*)=(&quot;[^&]*&quot;)/g,'<span class="at">$1</span>=<span class="vl">$2</span>')
     .replace(/(&lt;!--[\s\S]*?--&gt;)/g,'<span class="cm">$1</span>');
 }
-function renderXml(){if(!curData)return;document.getElementById('xo').innerHTML=synHL(xmlTab==='xpression'?buildXpression(curData):buildDaktronics(curData));}
-function swTab(t){xmlTab=t;document.querySelectorAll('.xtab').forEach((el,i)=>el.classList.toggle('on',(i===0&&t==='xpression')||(i===1&&t==='daktronics')));renderXml();}
-function toggleXml(){const p=document.getElementById('xp');p.classList.toggle('open');if(p.classList.contains('open'))renderXml();}
-function cpXml(){if(!curData)return;const x=xmlTab==='xpression'?buildXpression(curData):buildDaktronics(curData);navigator.clipboard.writeText(x).then(()=>{const b=document.querySelector('.xbtn');b.textContent='Copied!';setTimeout(()=>b.textContent='Copy',1500);});}
-function dlXml(e){e.preventDefault();if(!curData)return;const x=xmlTab==='xpression'?buildXpression(curData):buildDaktronics(curData);const fn=xmlTab==='xpression'?'xpression_stats.xml':'daktronics_rtd.xml';const b=new Blob([x],{type:'application/xml'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=fn;a.click();URL.revokeObjectURL(u);}
+function renderXml(){
+  if(!curData)return;
+  const xml=xmlTab==='xpression'?buildXpression(curData):buildDaktronics(curData);
+  document.getElementById('xo').innerHTML=synHL(xml);
+}
+function swTab(t){
+  xmlTab=t;
+  document.querySelectorAll('.xtab').forEach((el,i)=>{
+    const isOn=(i===0&&t==='xpression')||(i===1&&t==='daktronics');
+    el.classList.toggle('on',isOn);
+    el.setAttribute('aria-selected',String(isOn));
+  });
+  renderXml();
+}
+function toggleXml(){
+  const p=document.getElementById('xpanel');
+  const btn=document.getElementById('btnX');
+  const isOpen=p.style.display!=='none'&&p.style.display!=='';
+  if(isOpen){
+    p.style.display='none';
+    btn.setAttribute('aria-expanded','false');
+    btn.textContent='\u2195 XML';
+  }else{
+    p.style.display='block';
+    btn.setAttribute('aria-expanded','true');
+    btn.textContent='\u25b2 XML';
+    renderXml();
+    p.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+}
+function cpXml(){
+  if(!curData)return;
+  const xml=xmlTab==='xpression'?buildXpression(curData):buildDaktronics(curData);
+  navigator.clipboard.writeText(xml).then(()=>{
+    const b=document.querySelector('.xbtn');
+    const prev=b.textContent;b.textContent='Copied!';setTimeout(()=>b.textContent=prev,1800);
+  }).catch(()=>{
+    // Fallback for non-secure contexts
+    const ta=document.createElement('textarea');ta.value=xml;
+    document.body.appendChild(ta);ta.select();
+    document.execCommand('copy');document.body.removeChild(ta);
+    const b=document.querySelector('.xbtn');b.textContent='Copied!';setTimeout(()=>b.textContent='Copy',1800);
+  });
+}
+function dlXml(e){
+  e.preventDefault();if(!curData)return;
+  const xml=xmlTab==='xpression'?buildXpression(curData):buildDaktronics(curData);
+  const fn=xmlTab==='xpression'?'xpression_stats.xml':'daktronics_rtd.xml';
+  const blob=new Blob([xml],{type:'application/xml;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=fn;
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},100);
+}
 
+// ── Polling controls ──────────────────────────────────────────────────────────
 function startPolling(){
   const tok=document.getElementById('tok').value.trim(),mid=getMid();
   if(!tok){alert('Enter your API token first.');return;}
   if(!mid){alert('Select a match first.');return;}
-  document.getElementById('btnS').disabled=true;document.getElementById('btnP').disabled=false;document.getElementById('btnX').disabled=false;
+  document.getElementById('btnS').disabled=true;
+  document.getElementById('btnP').disabled=false;
+  document.getElementById('btnX').disabled=false;
   const iv=parseInt(document.getElementById('iv').value)*1000;
-  fetchAndRender();pollTimer=setInterval(fetchAndRender,iv);
+  fetchAndRender();
+  pollTimer=setInterval(fetchAndRender,iv);
 }
-function stopPolling(){clearInterval(pollTimer);pollTimer=null;document.getElementById('btnS').disabled=false;document.getElementById('btnP').disabled=true;setSt('idle','Stopped');}
-function setSt(state,txt){document.getElementById('pill').className=`pill ${state}`;document.getElementById('pt').textContent=txt;}
+function stopPolling(){
+  clearInterval(pollTimer);pollTimer=null;
+  document.getElementById('btnS').disabled=false;
+  document.getElementById('btnP').disabled=true;
+  setSt('idle','Stopped');
+}
+function setSt(s,t){
+  document.getElementById('pill').className=`pill ${s}`;
+  document.getElementById('pt').textContent=t;
+}
 function showErr(e){
   const p=document.getElementById('ep');p.classList.add('show');
-  document.getElementById('et').textContent='Connection Error';document.getElementById('em').textContent=e.message;
+  document.getElementById('et').textContent='Connection Error';
+  document.getElementById('em').textContent=e.message;
   let hint='';
-  if(e.message.includes('fetch')||e.message.includes('Failed')||e.message.includes('Network'))hint='CORS blocked direct API AND proxy not running. Run proxy.js locally, or verify token/match ID.';
+  if(e.message.includes('fetch')||e.message.includes('Failed')||e.message.includes('Network'))
+    hint='CORS blocked direct API AND proxy not running. Run proxy.js locally, or check token/match ID.';
   else if(e.message.includes('401'))hint='Invalid token. Check with your VolleyStation admin.';
-  else if(e.message.includes('404'))hint='Match ID not found.';
+  else if(e.message.includes('404'))hint='Match ID not found. Check the dropdown selection.';
   document.getElementById('eh').textContent=hint;
   document.getElementById('empty').style.display='none';
 }
 function hideErr(){document.getElementById('ep').classList.remove('show');}
-document.getElementById('tok').addEventListener('input',function(){sessionStorage.setItem('vs_tok',this.value);});
+
+// ── Persist token ─────────────────────────────────────────────────────────────
+document.getElementById('tok').addEventListener('input',function(){
+  sessionStorage.setItem('vs_tok',this.value);
+});
 const sv=sessionStorage.getItem('vs_tok');if(sv)document.getElementById('tok').value=sv;
 
 </script>
