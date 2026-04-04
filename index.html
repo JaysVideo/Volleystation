@@ -879,114 +879,261 @@ function renderTbl(id,players,isServTeam,servNum){
   }).join('');
 }
 
-// ── XML builders ──────────────────────────────────────────────────────────────
-function buildXpression(d){
-  const L=[];const a=(id,v)=>L.push(`  <Data id="${esc(id)}">${esc(v)}</Data>`);
-  a('MATCH_ID',d.matchId);a('TIMESTAMP',d.timestamp);
-  a('HOME_TEAM_NAME',d.homeTeam);a('AWAY_TEAM_NAME',d.awayTeam);
-  a('HOME_TEAM_COLOR',teamColor(d.homeTeam,'primary'));a('AWAY_TEAM_COLOR',teamColor(d.awayTeam,'primary'));
-  a('HOME_TEAM_COLOR2',teamColor(d.homeTeam,'secondary'));a('AWAY_TEAM_COLOR2',teamColor(d.awayTeam,'secondary'));
-  a('HOME_TEAM_LOGO',teamLogo(d.homeTeam));a('AWAY_TEAM_LOGO',teamLogo(d.awayTeam));
-  a('CURRENT_SET',d.curSet);a('SERVE_TEAM',d.serve);a('SERVING_PLAYER_JERSEY',d.servingNum);
-  a('HOME_SET_WINS',d.wonHome);a('AWAY_SET_WINS',d.wonAway);
-  a('HOME_TIMEOUTS_LEFT',d.timeouts[0]);a('AWAY_TIMEOUTS_LEFT',d.timeouts[1]);
-  a('HOME_SUBS_LEFT',d.subs[0]);a('AWAY_SUBS_LEFT',d.subs[1]);
-  a('HOME_SET_BALLS',d.setBalls[0]);a('AWAY_SET_BALLS',d.setBalls[1]);
-  a('HOME_MATCH_BALLS',d.matchBalls[0]);a('AWAY_MATCH_BALLS',d.matchBalls[1]);
-  a('HOME_LIBERO_JERSEY',d.liberoHome);a('AWAY_LIBERO_JERSEY',d.liberoAway);
-  if(d.timer){a('TIMER_TYPE',d.timer.timer_type);a('TIMER_DURATION',d.timer.duration);}
-  d.sets.forEach((s,i)=>{a(`SET${i+1}_HOME`,s.home);a(`SET${i+1}_AWAY`,s.away);});
-  L.push('');L.push('  <!-- TEAM TOTALS -->');
-  const addTotals=(pfx,ts)=>{
-    a(`${pfx}_TEAM_KILLS`,ts.attack.kills);a(`${pfx}_TEAM_ACES`,ts.serve.aces);
-    a(`${pfx}_TEAM_BLOCKS`,ts.block.points);a(`${pfx}_TEAM_DIGS`,ts.digs.total);
-    a(`${pfx}_TEAM_ERRORS`,ts.errors.total);a(`${pfx}_TEAM_POINTS`,ts.points.total);
-    a(`${pfx}_TEAM_HIT_PCT`,hitPctStr(ts));
-  };
-  addTotals('HOME',d.homeTeamStats);addTotals('AWAY',d.awayTeamStats);
-  L.push('');L.push('  <!-- ON-COURT ZONE SLOTS -->');
-  L.push('  <!-- Zone 1=right-back  2=right-front  3=middle-front  4=left-front  5=left-back  6=middle-back -->');
-  const addZones=(pfx,oc,isServ,sNum)=>{
-    for(let z=1;z<=6;z++){
-      const p=oc[z-1],pf=`${pfx}_COURT_Z${z}`;
-      const srv=isServ&&p&&String(p.jersey)===String(sNum)?'1':'0';
-      a(`${pf}_JERSEY`,p?.jersey||'');a(`${pf}_NAME`,p?.name||'');a(`${pf}_SHIRT_NAME`,p?.shirt_name||'');
-      a(`${pf}_LIBERO`,p?.isLibero?'1':'0');a(`${pf}_SERVING`,srv);
-      a(`${pf}_PTS`,p?String(p.points.total):'');a(`${pf}_KILLS`,p?String(p.attack.kills):'');
-      a(`${pf}_ACES`,p?String(p.serve.aces):'');a(`${pf}_BLK_PTS`,p?String(p.block.points):'');
-      a(`${pf}_DIGS`,p?String(p.digs.total):'');a(`${pf}_HIT_PCT`,p?hitPctStr(p):'');
-      a(`${pf}_REC_POS_PCT`,p?pctFmt(p.reception.pos_pct):'');a(`${pf}_REC_PERF_PCT`,p?pctFmt(p.reception.perf_pct):'');
-    }
-  };
-  L.push('');L.push('  <!-- HOME COURT ZONES -->');addZones('HOME',d.homeOnCourt,d.serve==='home',d.servingNum);
-  L.push('');L.push('  <!-- AWAY COURT ZONES -->');addZones('AWAY',d.awayOnCourt,d.serve==='away',d.servingNum);
-  const addAllP=(pfx,players,isServ,sNum)=>{
-    const sorted=[...players].sort((a,b)=>{if(a.onCourt&&!b.onCourt)return -1;if(!a.onCourt&&b.onCourt)return 1;if(a.onCourt&&b.onCourt)return a.courtZone-b.courtZone;return 0;});
-    sorted.forEach((p,i)=>{
-      const n=i+1,pf=`${pfx}_P${n}`,isS=isServ&&String(p.jersey)===String(sNum);
-      a(`${pf}_JERSEY`,p.jersey);a(`${pf}_NAME`,p.name);a(`${pf}_SHIRT_NAME`,p.shirt_name);
-      a(`${pf}_ON_COURT`,p.onCourt?'1':'0');a(`${pf}_COURT_ZONE`,p.onCourt?String(p.courtZone):'0');
-      a(`${pf}_LIBERO`,p.isLibero?'1':'0');a(`${pf}_SERVING`,isS?'1':'0');
-      a(`${pf}_SP`,p.sets_played);a(`${pf}_PTS`,p.points.total);a(`${pf}_PTS_SO`,p.points.side_out);a(`${pf}_PTS_BP`,p.points.break_point);
-      a(`${pf}_KILLS`,p.attack.kills);a(`${pf}_ATK_ERR`,p.attack.errors);a(`${pf}_ATK_TOT`,p.attack.total);a(`${pf}_HIT_PCT`,hitPctStr(p));
-      a(`${pf}_ACES`,p.serve.aces);a(`${pf}_SERVE_ERR`,p.serve.errors);
-      a(`${pf}_REC_TOT`,p.reception.total);a(`${pf}_REC_POS_PCT`,pctFmt(p.reception.pos_pct));a(`${pf}_REC_PERF_PCT`,pctFmt(p.reception.perf_pct));
-      a(`${pf}_BLK_PTS`,p.block.points);a(`${pf}_DIGS`,p.digs.total);a(`${pf}_ASSISTS`,p.assists);
-    });
-  };
-  L.push('');L.push('  <!-- HOME PLAYERS (P1-P6 on court, then bench) -->');addAllP('HOME',d.homePlayers,d.serve==='home',d.servingNum);
-  L.push('');L.push('  <!-- AWAY PLAYERS -->');addAllP('AWAY',d.awayPlayers,d.serve==='away',d.servingNum);
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<!-- Ross Xpression DataPool | MLV | Match ${esc(d.matchId)} | ${d.timestamp} -->\n<DataPool>\n${L.join('\n')}\n</DataPool>`;
+// ── XML builders — NCAA vbgame format ────────────────────────────────────────
+// Mirrors the NCAA Volleyball LiveStats XML schema exactly.
+// Both Xpression and Daktronics receive the same <vbgame> structure.
+// Xpression mode adds mlv* extension attributes to existing NCAA elements.
+// Daktronics mode = pure NCAA with no additions.
+
+// ── Format helpers (match NCAA attribute conventions exactly) ─────────────────
+function ncaaPct(k,e,ta){
+  // NCAA format: ".418" or "-.125" or ".000" — leading zero omitted, sign before dot
+  const n=Number(ta);
+  if(n===0)return'.000';
+  const v=(Number(k)-Number(e))/n;
+  if(v===0)return'.000';
+  const s=v.toFixed(3);           // e.g. "0.418" or "-0.125"
+  return s.replace(/^(-?)0\./,'$1.');  // strip leading zero → ".418" / "-.125"
+}
+function ncaaTb(bs,ba){
+  // tb = solos + assists*0.5  — NCAA shows as "6.0" or "5" (int if whole number)
+  const v=Number(bs)+Number(ba)*0.5;
+  return v%1===0?String(v):v.toFixed(1);
+}
+function ncaaPts(k,sa,bs,ba){
+  // pts = kills + aces + block solos + block assists*0.5
+  const v=Number(k)+Number(sa)+Number(bs)+Number(ba)*0.5;
+  return v.toFixed(1);
+}
+function ncaaDate(ts){
+  const d=new Date(ts);
+  return`${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}/${d.getFullYear()}`;
+}
+function ncaaTime(ts){
+  const d=new Date(ts);
+  const h=d.getHours(),m=d.getMinutes();
+  return`${(h%12||12).toString().padStart(2,'0')}:${m.toString().padStart(2,'0')} ${h<12?'AM':'PM'}`;
 }
 
-function buildDaktronics(d){
+// ── Single canonical build — mode 'xpression'|'daktronics' ───────────────────
+function buildNCAA(d,mode){
+  const xpr=mode==='xpression';
   const L=[];
-  L.push(`<?xml version="1.0" encoding="UTF-8"?>`);
-  L.push(`<!-- Daktronics RTD | MLV | Match ${esc(d.matchId)} | ${d.timestamp} -->`);
-  L.push(`<RTD sport="Volleyball" version="2.0">`);
-  L.push(`  <Game id="${esc(d.matchId)}" timestamp="${d.timestamp}">`);
-  L.push(`    <State>`);
-  L.push(`      <CurrentSet>${d.curSet}</CurrentSet>`);
-  L.push(`      <Serve team="${esc(d.serve)}" playerJersey="${esc(d.servingNum)}" />`);
-  L.push(`      <SetBalls home="${d.setBalls[0]}" away="${d.setBalls[1]}" />`);
-  L.push(`      <MatchBalls home="${d.matchBalls[0]}" away="${d.matchBalls[1]}" />`);
-  L.push(`      <Timeouts home="${d.timeouts[0]}" away="${d.timeouts[1]}" />`);
-  L.push(`      <Substitutions home="${d.subs[0]}" away="${d.subs[1]}" />`);
-  if(d.timer)L.push(`      <Timer type="${esc(d.timer.timer_type)}" duration="${esc(d.timer.duration)}" />`);
-  L.push(`    </State>`);
-  L.push(`    <Sets>`);
-  d.sets.forEach((s,i)=>L.push(`      <Set num="${i+1}" home="${s.home}" away="${s.away}" />`));
-  L.push(`    </Sets>`);
-  const addTeam=(type,nm,wins,players,oc,ts,lu,libJ,isServ,sNum)=>{
-    const color=teamColor(nm,'primary'),color2=teamColor(nm,'secondary'),logo=teamLogo(nm);
-    L.push(`    <Team type="${type}">`);
-    L.push(`      <n>${esc(nm)}</n><SetWins>${wins}</SetWins>`);
-    L.push(`      <PrimaryColor>${esc(color)}</PrimaryColor><SecondaryColor>${esc(color2)}</SecondaryColor>`);
-    L.push(`      <LogoURL>${esc(logo)}</LogoURL><Libero jersey="${esc(libJ)}" />`);
-    L.push(`      <TeamStats><Points>${ts.points.total}</Points><Kills>${ts.attack.kills}</Kills><Aces>${ts.serve.aces}</Aces><Blocks>${ts.block.points}</Blocks><Digs>${ts.digs.total}</Digs><Errors>${ts.errors.total}</Errors><HitPct>${hitPctStr(ts)}</HitPct></TeamStats>`);
-    L.push(`      <Court>`);
-    for(let z=1;z<=6;z++){
-      const p=oc[z-1],srv=isServ&&p&&String(p.jersey)===String(sNum)?'1':'0';
-      if(p){
-        L.push(`        <Zone num="${z}" jersey="${esc(p.jersey)}" libero="${p.isLibero?'1':'0'}" serving="${srv}"><n>${esc(p.name)}</n><ShirtName>${esc(p.shirt_name)}</ShirtName><Points>${p.points.total}</Points><Kills>${p.attack.kills}</Kills><HitPct>${hitPctStr(p)}</HitPct><Aces>${p.serve.aces}</Aces><BlockPoints>${p.block.points}</BlockPoints><Digs>${p.digs.total}</Digs><RecPositivePct>${pctFmt(p.reception.pos_pct)}</RecPositivePct><RecPerfectPct>${pctFmt(p.reception.perf_pct)}</RecPerfectPct></Zone>`);
-      }else{
-        L.push(`        <Zone num="${z}" jersey="" libero="0" serving="0" />`);
-      }
-    }
-    L.push(`      </Court>`);
-    const sorted=[...players].sort((a,b)=>{if(a.onCourt&&!b.onCourt)return -1;if(!a.onCourt&&b.onCourt)return 1;if(a.onCourt&&b.onCourt)return a.courtZone-b.courtZone;return 0;});
-    L.push(`      <Players>`);
-    sorted.forEach((p,i)=>{
-      const srv=isServ&&String(p.jersey)===String(sNum)?'1':'0';
-      L.push(`        <Player seq="${i+1}" jersey="${esc(p.jersey)}" onCourt="${p.onCourt?'1':'0'}" courtZone="${p.onCourt?p.courtZone:'0'}" libero="${p.isLibero?'1':'0'}" serving="${srv}"><n>${esc(p.name)}</n><ShirtName>${esc(p.shirt_name)}</ShirtName><SetsPlayed>${p.sets_played}</SetsPlayed><Points total="${p.points.total}" sideOut="${p.points.side_out}" breakPoint="${p.points.break_point}" /><Attack total="${p.attack.total}" kills="${p.attack.kills}" errors="${p.attack.errors}" hitPct="${hitPctStr(p)}" /><Serve aces="${p.serve.aces}" errors="${p.serve.errors}" /><Reception total="${p.reception.total}" posPct="${pctFmt(p.reception.pos_pct)}" perfPct="${pctFmt(p.reception.perf_pct)}" /><Block points="${p.block.points}" /><Digs>${p.digs.total}</Digs><Assists>${p.assists}</Assists></Player>`);
+  const x=(s)=>L.push(s);
+
+  // Visitor = away team, Home = home team (NCAA convention)
+  const vName=d.awayTeam, hName=d.homeTeam;
+  // Short codes — strip spaces, take first 4 chars uppercase (GU / CU style)
+  const vId=vName.replace(/[^A-Za-z0-9]/g,'').slice(0,4).toUpperCase();
+  const hId=hName.replace(/[^A-Za-z0-9]/g,'').slice(0,4).toUpperCase();
+  const vscore=d.wonAway, hscore=d.wonHome;
+  const complete=(hscore>=3||vscore>=3)?'Y':'N';
+  const serving=d.serve==='home'?'H':d.serve==='away'?'V':'';
+  // Live set score = last set in array
+  const cur=d.sets[d.sets.length-1]||{home:0,away:0};
+  const vpoints=cur.away, hpoints=cur.home;
+
+  // ── Root element ────────────────────────────────────────────────────────────
+  // Xpression gets MLV brand data as extra attrs on the root (non-breaking addition)
+  const mlvRoot=xpr
+    ?` mlvHomeColor="${esc(teamColor(hName,'primary'))}" mlvHomeColor2="${esc(teamColor(hName,'secondary'))}" mlvHomeLogo="${esc(teamLogo(hName))}" mlvAwayColor="${esc(teamColor(vName,'primary'))}" mlvAwayColor2="${esc(teamColor(vName,'secondary'))}" mlvAwayLogo="${esc(teamLogo(vName))}"`
+    :'';
+  x(`<?xml version="1.0" encoding="UTF-8"?>`);
+  x(`<vbgame source="MLV VolleyStation Live Stats" toolVersion="1.0" version="1.1.2" generated="${esc(ncaaDate(d.timestamp))}"${mlvRoot}>`);
+
+  // ── Venue ───────────────────────────────────────────────────────────────────
+  x(`  <venue gameid="${esc(d.matchId)}" visid="${esc(vId)}" visname="${esc(vName)}" homeid="${esc(hId)}" homename="${esc(hName)}" date="${esc(ncaaDate(d.timestamp))}" location="" arena="" start="${esc(ncaaTime(d.timestamp))}" attend="" schednote="" leaguegame="Y" neutralgame="N" nitegame="N" postseason="N" gameset="${d.sets.length}">`);
+  x(`    <officials>`);
+  x(`    </officials>`);
+  x(`    <notes>`);
+  // Live match state in notes — both modes (helpful for any system reading this)
+  const timerNote=d.timer?` Timer: ${d.timer.timer_type}.`:'';
+  x(`      <note text="Set ${d.curSet} | Timeouts H:${d.timeouts[0]} V:${d.timeouts[1]} | Subs H:${d.subs[0]} V:${d.subs[1]} | Libero H:${esc(d.liberoHome)} V:${esc(d.liberoAway)} | Server:#${esc(d.servingNum)}${timerNote}">`);
+  x(`      </note>`);
+  x(`    </notes>`);
+  x(`  </venue>`);
+
+  // ── Status ──────────────────────────────────────────────────────────────────
+  x(`  <status complete="${complete}" vscore="${vscore}" hscore="${hscore}" game="${d.curSet}" serving="${serving}" vpoints="${vpoints}" hpoints="${hpoints}">`);
+  x(`  </status>`);
+
+  // ── Team builder ─────────────────────────────────────────────────────────────
+  function buildTeam(vh,teamName,players,onCourt,teamStats,wonSets,isServTeam,servNum){
+    const tid=teamName.replace(/[^A-Za-z0-9]/g,'').slice(0,4).toUpperCase();
+    // linescore: points this team scored each set
+    const setScores=d.sets.map(s=>vh==='H'?s.home:s.away);
+    const lineStr=setScores.join(',');
+
+    // Team totals from teamStats
+    const t=teamStats;
+    const t_k=t.attack.kills, t_e=t.attack.errors, t_ta=t.attack.total;
+    const t_sa=t.serve.aces,  t_se=t.serve.errors, t_sta=t.serve.total;
+    const t_a=t.assists,      t_dig=t.digs.total,   t_re=t.reception?.errors||0;
+    const t_rta=t.reception?.total||0;
+    const t_bs=t.block.points, t_ba=0, t_be=t.block.errors||0;
+
+    // MLV extension attrs on team element (Xpression only)
+    const mlvTeam=xpr
+      ?` mlvPrimaryColor="${esc(teamColor(teamName,'primary'))}" mlvSecondaryColor="${esc(teamColor(teamName,'secondary'))}" mlvLogoURL="${esc(teamLogo(teamName))}"`
+      :'';
+
+    x(`  <team vh="${vh}" code="${esc(tid)}" id="${esc(tid)}" name="${esc(teamName)}"${mlvTeam}>`);
+
+    // linescore
+    x(`    <linescore line="${esc(lineStr)}" score="${wonSets}">`);
+    d.sets.forEach((s,i)=>{
+      const pts=vh==='H'?s.home:s.away;
+      x(`      <linegame game="${i+1}" points="${pts}">`);
+      x(`      </linegame>`);
     });
-    L.push(`      </Players></Team>`);
-  };
-  addTeam('home',d.homeTeam,d.wonHome,d.homePlayers,d.homeOnCourt,d.homeTeamStats,d.lineupHome,d.liberoHome,d.serve==='home',d.servingNum);
-  addTeam('away',d.awayTeam,d.wonAway,d.awayPlayers,d.awayOnCourt,d.awayTeamStats,d.lineupAway,d.liberoAway,d.serve==='away',d.servingNum);
-  L.push(`  </Game></RTD>`);
+    x(`    </linescore>`);
+
+    // attackbygame — VS summary API doesn't break team attacks per set;
+    // we include placeholder rows so the schema is complete
+    x(`    <attackbygame>`);
+    d.sets.forEach((_,i)=>{
+      x(`      <attackgame game="${i+1}" k="0" e="0" ta="0" pct=".000">`);
+      x(`      </attackgame>`);
+    });
+    x(`    </attackbygame>`);
+
+    // totals
+    x(`    <totals>`);
+    x(`      <attack k="${t_k}" e="${t_e}" ta="${t_ta}" pct="${ncaaPct(t_k,t_e,t_ta)}">`);
+    x(`      </attack>`);
+    x(`      <set a="${t_a}" e="0" ta="0">`);
+    x(`      </set>`);
+    x(`      <serve sa="${t_sa}" se="${t_se}" ta="${t_sta}">`);
+    x(`      </serve>`);
+    x(`      <defense dig="${t_dig}" re="${t_re}" ta="${t_rta}">`);
+    x(`      </defense>`);
+    x(`      <block bs="${t_bs}" ba="${t_ba}" be="${t_be}" tb="${ncaaTb(t_bs,t_ba)}">`);
+    x(`      </block>`);
+    x(`      <misc bhe="0" pts="${ncaaPts(t_k,t_sa,t_bs,t_ba)}">`);
+    x(`      </misc>`);
+    x(`    </totals>`);
+
+    // Players — sorted: on-court first by zone, then bench
+    const sorted=[...players].sort((a,b)=>{
+      if(a.onCourt&&!b.onCourt)return -1;
+      if(!a.onCourt&&b.onCourt)return 1;
+      if(a.onCourt&&b.onCourt)return a.courtZone-b.courtZone;
+      return 0;
+    });
+    sorted.forEach(p=>{
+      const isServ=isServTeam&&String(p.jersey)===String(servNum);
+      const ocAttr=p.onCourt?' oncourt="Y"':'';
+      const libAttr=p.libero?' libero="Y"':'';
+      const msAttr=(p.onCourt||Number(p.sets_played)>0)?' ms="1"':'';
+      // Xpression gets zone and serving state directly on player element
+      const mlvPlayer=xpr&&p.onCourt?` mlvCourtZone="${p.courtZone}" mlvServing="${isServ?'Y':'N'}"`:xpr&&isServ?' mlvServing="Y"':'';
+      const checkname=p.name.toUpperCase();
+      const k=p.attack.kills, e=p.attack.errors, ta=p.attack.total;
+      const sa=p.serve.aces,  se=p.serve.errors, sta=p.serve.total;
+      const a=p.assists, dig=p.digs.total;
+      const re=p.reception.errors||0, rta=p.reception.total||0;
+      const bs=p.block.points, ba=0, be=p.block.errors||0;
+
+      x(`    <player uni="${esc(p.jersey)}" code="${esc(p.jersey)}" name="${esc(p.name)}" checkname="${esc(checkname)}"${ocAttr}${libAttr} gp="${p.sets_played}"${msAttr}${mlvPlayer}>`);
+      x(`      <attack k="${k}" e="${e}" ta="${ta}" pct="${ncaaPct(k,e,ta)}">`);
+      x(`      </attack>`);
+      x(`      <set a="${a}" e="0" ta="0">`);
+      x(`      </set>`);
+      x(`      <serve sa="${sa}" se="${se}" ta="${sta}">`);
+      x(`      </serve>`);
+      x(`      <defense dig="${dig}" re="${re}" ta="${rta}">`);
+      x(`      </defense>`);
+      x(`      <block bs="${bs}" ba="${ba}" be="${be}" tb="${ncaaTb(bs,ba)}">`);
+      x(`      </block>`);
+      x(`      <misc bhe="0" pts="${ncaaPts(k,sa,bs,ba)}">`);
+      x(`      </misc>`);
+      x(`    </player>`);
+    });
+
+    // NCAA always ends with a TEAM placeholder row
+    x(`    <player uni="TM" code="TM" name="TEAM" checkname="TEAM" gp="${d.sets.length}">`);
+    x(`      <attack k="0" e="0" ta="0" pct=".000">`);
+    x(`      </attack>`);
+    x(`      <set a="0" e="0" ta="0">`);
+    x(`      </set>`);
+    x(`      <serve sa="0" se="0" ta="0">`);
+    x(`      </serve>`);
+    x(`      <defense dig="0" re="0" ta="0">`);
+    x(`      </defense>`);
+    x(`      <block bs="0" ba="0" be="0" tb="0">`);
+    x(`      </block>`);
+    x(`      <misc bhe="0" pts="0.0">`);
+    x(`      </misc>`);
+    x(`    </player>`);
+
+    x(`  </team>`);
+  }
+
+  // Visitor (away) first, then Home — NCAA convention
+  buildTeam('V',vName,d.awayPlayers,d.awayOnCourt,d.awayTeamStats,vscore,d.serve==='away',d.servingNum);
+  buildTeam('H',hName,d.homePlayers,d.homeOnCourt,d.homeTeamStats,hscore,d.serve==='home',d.servingNum);
+
+  // ── Plays ───────────────────────────────────────────────────────────────────
+  // VS summary API does not provide play-by-play; include structurally complete
+  // empty game shells so parsers don't fail on missing <plays> section.
+  x(`  <plays format="summary">`);
+  d.sets.forEach((_,i)=>{
+    x(`    <game number="${i+1}">`);
+    x(`    </game>`);
+  });
+  x(`  </plays>`);
+
+  // ── Analysis (empty — NCAA standard) ────────────────────────────────────────
+  x(`  <analysis>`);
+  x(`  </analysis>`);
+
+  // ── Lead changes ─────────────────────────────────────────────────────────────
+  x(`  <leadchanges ties="0" leads="0">`);
+  d.sets.forEach((_,i)=>{
+    x(`    <leadchange game="${i+1}" ties="0" leads="0">`);
+    x(`    </leadchange>`);
+  });
+  x(`  </leadchanges>`);
+
+  // ── Breakdowns — visitor first, then home ────────────────────────────────────
+  [{vh:'V',ts:d.awayTeamStats},{vh:'H',ts:d.homeTeamStats}].forEach(({vh,ts})=>{
+    const k=ts.attack.kills, sa=ts.serve.aces, bs=ts.block.points, ba=0;
+    const eatk=ts.attack.errors, esvc=ts.serve.errors;
+    const ptsTotal=ncaaPts(k,sa,bs,ba);
+    x(`  <breakdowns vh="${vh}" pts="${ptsTotal}" kill="${k}" ace="${sa}" block="${bs}" eatk="${eatk}" esvc="${esvc}" ebhe="0">`);
+    d.sets.forEach((_,i)=>{
+      // Per-set breakdown not in VS summary API — include structure with zeros
+      x(`    <breakdown game="${i+1}" pts="0" kill="0" ace="0" block="0" eatk="0" esvc="0" ebhe="0">`);
+      x(`    </breakdown>`);
+    });
+    x(`  </breakdowns>`);
+  });
+
+  // ── On-court list (NCAA position: after breakdowns, last before close) ────────
+  x(`  <oncourtlist>`);
+  // Away (visitor) players on court
+  d.awayPlayers.filter(p=>p.onCourt).forEach(p=>{
+    const isServ=d.serve==='away'&&String(p.jersey)===String(d.servingNum);
+    const mlvOc=xpr?` mlvCourtZone="${p.courtZone}" mlvServing="${isServ?'Y':'N'}" mlvLibero="${p.isLibero?'Y':'N'}"`:' ';
+    x(`    <oncourt vh="V" tm="${esc(vId)}" uni="${esc(p.jersey)}" name="${esc(p.name)}"${mlvOc}>`);
+    x(`    </oncourt>`);
+  });
+  // Home players on court
+  d.homePlayers.filter(p=>p.onCourt).forEach(p=>{
+    const isServ=d.serve==='home'&&String(p.jersey)===String(d.servingNum);
+    const mlvOc=xpr?` mlvCourtZone="${p.courtZone}" mlvServing="${isServ?'Y':'N'}" mlvLibero="${p.isLibero?'Y':'N'}"`:' ';
+    x(`    <oncourt vh="H" tm="${esc(hId)}" uni="${esc(p.jersey)}" name="${esc(p.name)}"${mlvOc}>`);
+    x(`    </oncourt>`);
+  });
+  x(`  </oncourtlist>`);
+
+  x(`</vbgame>`);
   return L.join('\n');
 }
+
+// Thin wrappers — same NCAA structure, Xpression adds mlv* extension attrs
+function buildXpression(d){ return buildNCAA(d,'xpression'); }
+function buildDaktronics(d){ return buildNCAA(d,'daktronics'); }
 
 // ── XML panel ─────────────────────────────────────────────────────────────────
 function synHL(xml){
