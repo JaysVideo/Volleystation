@@ -739,6 +739,8 @@ function buildData(stats,match,mid){
     timeouts:match.timeout_count||[2,2],subs:match.substitution_count||[6,6],
     setBalls:match.set_ball_count||[0,0],matchBalls:match.match_ball_count||[0,0],
     timer:match.timer||null,
+    matchDateTime:match.MatchDateTime||'',
+    spectators:match.Spectators??'',
     homePlayers,awayPlayers,homeOnCourt,awayOnCourt,
     homeTeamStats:normP({...(stats.home?.team||{}),name:'',surname:'',shirtNumber:'TEAM',positions:[]}),
     awayTeamStats:normP({...(stats.away?.team||{}),name:'',surname:'',shirtNumber:'TEAM',positions:[]}),
@@ -880,116 +882,132 @@ function renderTbl(id,players,isServTeam,servNum){
 }
 
 // ── XML builders — NCAA vbgame format ────────────────────────────────────────
-// Mirrors the NCAA Volleyball LiveStats XML schema exactly.
-// Both Xpression and Daktronics receive the same <vbgame> structure.
-// Xpression mode adds mlv* extension attributes to existing NCAA elements.
-// Daktronics mode = pure NCAA with no additions.
+// Mirrors NCAA Volleyball LiveStats XML (vbgame v1.1.2) exactly.
+// Only fields we can confidently derive from the VS API are populated.
+// Fields not available from VS are left as empty string "".
+// Daktronics = pure NCAA. Xpression = NCAA + mlv* extension attrs.
 
-// ── Format helpers (match NCAA attribute conventions exactly) ─────────────────
+// ── NCAA format helpers ───────────────────────────────────────────────────────
 function ncaaPct(k,e,ta){
-  // NCAA format: ".418" or "-.125" or ".000" — leading zero omitted, sign before dot
+  // NCAA convention: ".418" not "0.418", "-.125" not "-0.125", ".000" for zero
   const n=Number(ta);
   if(n===0)return'.000';
   const v=(Number(k)-Number(e))/n;
-  if(v===0)return'.000';
-  const s=v.toFixed(3);           // e.g. "0.418" or "-0.125"
-  return s.replace(/^(-?)0\./,'$1.');  // strip leading zero → ".418" / "-.125"
+  const s=v.toFixed(3);
+  return s.replace(/^(-?)0\./,'$1.');
 }
 function ncaaTb(bs,ba){
-  // tb = solos + assists*0.5  — NCAA shows as "6.0" or "5" (int if whole number)
+  // tb = solos + assists*0.5. With ba=0 from VS, tb=bs as x.0 if whole
   const v=Number(bs)+Number(ba)*0.5;
-  return v%1===0?String(v):v.toFixed(1);
+  return v===0?'0':v%1===0?v.toFixed(1):v.toFixed(1);
 }
 function ncaaPts(k,sa,bs,ba){
-  // pts = kills + aces + block solos + block assists*0.5
-  const v=Number(k)+Number(sa)+Number(bs)+Number(ba)*0.5;
-  return v.toFixed(1);
+  // pts = kills + aces + block solos + block assists*0.5, formatted "13.0"
+  return(Number(k)+Number(sa)+Number(bs)+Number(ba)*0.5).toFixed(1);
 }
-function ncaaDate(ts){
-  const d=new Date(ts);
+function ncaaDate(isoStr){
+  // "2026-01-08T19:00:00-05:00" → "01/08/2026"
+  const d=new Date(isoStr);
+  if(isNaN(d))return'';
   return`${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}/${d.getFullYear()}`;
 }
-function ncaaTime(ts){
-  const d=new Date(ts);
+function ncaaTime(isoStr){
+  // "2026-01-08T19:00:00-05:00" → "07:00 PM"
+  const d=new Date(isoStr);
+  if(isNaN(d))return'';
   const h=d.getHours(),m=d.getMinutes();
   return`${(h%12||12).toString().padStart(2,'0')}:${m.toString().padStart(2,'0')} ${h<12?'AM':'PM'}`;
 }
+function shortCode(name){
+  // Produce a short team code. Not an official field in VS, so abbreviate safely.
+  return name.replace(/[^A-Za-z0-9]/g,'').slice(0,4).toUpperCase()||'TEAM';
+}
 
-// ── Single canonical build — mode 'xpression'|'daktronics' ───────────────────
-function buildNCAA(d,mode){
-  const xpr=mode==='xpression';
+// ── Build NCAA vbgame XML ─────────────────────────────────────────────────────
+function buildNCAA(d, mode){
+  const xpr=(mode==='xpression');
   const L=[];
-  const x=(s)=>L.push(s);
+  const x=s=>L.push(s);
+  const e=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-  // Visitor = away team, Home = home team (NCAA convention)
+  // Convention: away=visitor(V), home=home(H)
   const vName=d.awayTeam, hName=d.homeTeam;
-  // Short codes — strip spaces, take first 4 chars uppercase (GU / CU style)
-  const vId=vName.replace(/[^A-Za-z0-9]/g,'').slice(0,4).toUpperCase();
-  const hId=hName.replace(/[^A-Za-z0-9]/g,'').slice(0,4).toUpperCase();
+  const vCode=shortCode(vName), hCode=shortCode(hName);
   const vscore=d.wonAway, hscore=d.wonHome;
   const complete=(hscore>=3||vscore>=3)?'Y':'N';
   const serving=d.serve==='home'?'H':d.serve==='away'?'V':'';
-  // Live set score = last set in array
-  const cur=d.sets[d.sets.length-1]||{home:0,away:0};
-  const vpoints=cur.away, hpoints=cur.home;
+  const lastSet=d.sets[d.sets.length-1]||{home:0,away:0};
+  const vpoints=lastSet.away, hpoints=lastSet.home;
 
-  // ── Root element ────────────────────────────────────────────────────────────
-  // Xpression gets MLV brand data as extra attrs on the root (non-breaking addition)
+  // Use match date from API if available, otherwise fallback to now
+  const matchDt=d.matchDateTime||d.timestamp;
+
+  // ── Root ────────────────────────────────────────────────────────────────────
+  // Xpression: MLV brand extension attrs on root (purely additive, don't break parsers)
   const mlvRoot=xpr
-    ?` mlvHomeColor="${esc(teamColor(hName,'primary'))}" mlvHomeColor2="${esc(teamColor(hName,'secondary'))}" mlvHomeLogo="${esc(teamLogo(hName))}" mlvAwayColor="${esc(teamColor(vName,'primary'))}" mlvAwayColor2="${esc(teamColor(vName,'secondary'))}" mlvAwayLogo="${esc(teamLogo(vName))}"`
+    ?` mlvHomeColor="${e(teamColor(hName,'primary'))}" mlvHomeColor2="${e(teamColor(hName,'secondary'))}" mlvHomeLogo="${e(teamLogo(hName))}" mlvAwayColor="${e(teamColor(vName,'primary'))}" mlvAwayColor2="${e(teamColor(vName,'secondary'))}" mlvAwayLogo="${e(teamLogo(vName))}"`
     :'';
   x(`<?xml version="1.0" encoding="UTF-8"?>`);
-  x(`<vbgame source="MLV VolleyStation Live Stats" toolVersion="1.0" version="1.1.2" generated="${esc(ncaaDate(d.timestamp))}"${mlvRoot}>`);
+  x(`<vbgame source="MLV VolleyStation Live Stats" toolVersion="1.0" version="1.1.2" generated="${e(ncaaDate(matchDt))}"${mlvRoot}>`);
 
   // ── Venue ───────────────────────────────────────────────────────────────────
-  x(`  <venue gameid="${esc(d.matchId)}" visid="${esc(vId)}" visname="${esc(vName)}" homeid="${esc(hId)}" homename="${esc(hName)}" date="${esc(ncaaDate(d.timestamp))}" location="" arena="" start="${esc(ncaaTime(d.timestamp))}" attend="" schednote="" leaguegame="Y" neutralgame="N" nitegame="N" postseason="N" gameset="${d.sets.length}">`);
+  // Only populate fields we can confidently derive from VS API.
+  // gameid       = ChampionshipMatch_ID ✓
+  // visid/homeid = short abbreviation (derived, not official) ✓
+  // visname/homename = GuestTeam/HomeTeam ✓
+  // date         = from MatchDateTime ✓
+  // start        = from MatchDateTime ✓
+  // attend       = Spectators ✓ (may be 0 if not yet reported)
+  // gameset      = sets completed so far ✓
+  // location/arena/schednote/leaguegame/neutralgame/nitegame/postseason = not in VS API → ""
+  x(`  <venue gameid="${e(d.matchId)}" visid="${e(vCode)}" visname="${e(vName)}" homeid="${e(hCode)}" homename="${e(hName)}" date="${e(ncaaDate(matchDt))}" location="" arena="" start="${e(ncaaTime(matchDt))}" attend="${e(d.spectators??'')}" schednote="" leaguegame="" neutralgame="" nitegame="" postseason="" gameset="${d.sets.length}">`);
   x(`    <officials>`);
   x(`    </officials>`);
   x(`    <notes>`);
-  // Live match state in notes — both modes (helpful for any system reading this)
-  const timerNote=d.timer?` Timer: ${d.timer.timer_type}.`:'';
-  x(`      <note text="Set ${d.curSet} | Timeouts H:${d.timeouts[0]} V:${d.timeouts[1]} | Subs H:${d.subs[0]} V:${d.subs[1]} | Libero H:${esc(d.liberoHome)} V:${esc(d.liberoAway)} | Server:#${esc(d.servingNum)}${timerNote}">`);
-  x(`      </note>`);
   x(`    </notes>`);
   x(`  </venue>`);
 
   // ── Status ──────────────────────────────────────────────────────────────────
-  x(`  <status complete="${complete}" vscore="${vscore}" hscore="${hscore}" game="${d.curSet}" serving="${serving}" vpoints="${vpoints}" hpoints="${hpoints}">`);
+  x(`  <status complete="${complete}" vscore="${vscore}" hscore="${hscore}" game="${d.curSet}" serving="${e(serving)}" vpoints="${vpoints}" hpoints="${hpoints}">`);
   x(`  </status>`);
 
   // ── Team builder ─────────────────────────────────────────────────────────────
-  function buildTeam(vh,teamName,players,onCourt,teamStats,wonSets,isServTeam,servNum){
-    const tid=teamName.replace(/[^A-Za-z0-9]/g,'').slice(0,4).toUpperCase();
-    // linescore: points this team scored each set
+  function buildTeam(vh,teamName,players,teamStats,wonSets,isServTeam,servNum){
+    const tid=shortCode(teamName);
     const setScores=d.sets.map(s=>vh==='H'?s.home:s.away);
     const lineStr=setScores.join(',');
 
-    // Team totals from teamStats
+    // Totals — all values we are confident in from VS API
     const t=teamStats;
-    const t_k=t.attack.kills, t_e=t.attack.errors, t_ta=t.attack.total;
-    const t_sa=t.serve.aces,  t_se=t.serve.errors, t_sta=t.serve.total;
-    const t_a=t.assists,      t_dig=t.digs.total,   t_re=t.reception?.errors||0;
+    const t_k=t.attack.kills,   t_e=t.attack.errors,   t_ta=t.attack.total;
+    const t_sa=t.serve.aces,    t_se=t.serve.errors,   t_sta=t.serve.total;
+    const t_a=t.assists;
+    const t_dig=t.digs.total;
+    const t_re=t.reception?.errors||0;
     const t_rta=t.reception?.total||0;
-    const t_bs=t.block.points, t_ba=0, t_be=t.block.errors||0;
+    const t_bs=t.block.points;
+    // block assists (ba): VS only exposes combined block kills (B#), not solos vs assists split → 0
+    const t_ba=0;
+    const t_be=t.block.errors||0;
 
-    // MLV extension attrs on team element (Xpression only)
+    // Xpression extension attrs on <team>
     const mlvTeam=xpr
-      ?` mlvPrimaryColor="${esc(teamColor(teamName,'primary'))}" mlvSecondaryColor="${esc(teamColor(teamName,'secondary'))}" mlvLogoURL="${esc(teamLogo(teamName))}"`
+      ?` mlvPrimaryColor="${e(teamColor(teamName,'primary'))}" mlvSecondaryColor="${e(teamColor(teamName,'secondary'))}" mlvLogoURL="${e(teamLogo(teamName))}"`
       :'';
 
-    x(`  <team vh="${vh}" code="${esc(tid)}" id="${esc(tid)}" name="${esc(teamName)}"${mlvTeam}>`);
+    // code: VS API has no official numeric team code → use abbreviation
+    // record: not in VS API → ""
+    x(`  <team vh="${vh}" code="${e(tid)}" id="${e(tid)}" name="${e(teamName)}" record=""${mlvTeam}>`);
 
     // linescore
-    x(`    <linescore line="${esc(lineStr)}" score="${wonSets}">`);
+    x(`    <linescore line="${e(lineStr)}" score="${wonSets}">`);
     d.sets.forEach((s,i)=>{
-      const pts=vh==='H'?s.home:s.away;
-      x(`      <linegame game="${i+1}" points="${pts}">`);
+      x(`      <linegame game="${i+1}" points="${vh==='H'?s.home:s.away}">`);
       x(`      </linegame>`);
     });
     x(`    </linescore>`);
 
-    // attackbygame — VS summary API doesn't break team attacks per set;
-    // we include placeholder rows so the schema is complete
+    // attackbygame: per-set team attack not available from VS summary endpoint → structure only, zeros
     x(`    <attackbygame>`);
     d.sets.forEach((_,i)=>{
       x(`      <attackgame game="${i+1}" k="0" e="0" ta="0" pct=".000">`);
@@ -999,43 +1017,58 @@ function buildNCAA(d,mode){
 
     // totals
     x(`    <totals>`);
+    // attack: k/e/ta/pct — all confident from VS
     x(`      <attack k="${t_k}" e="${t_e}" ta="${t_ta}" pct="${ncaaPct(t_k,t_e,t_ta)}">`);
     x(`      </attack>`);
+    // set: a=assists confident; e and ta not in VS API → 0
     x(`      <set a="${t_a}" e="0" ta="0">`);
     x(`      </set>`);
+    // serve: sa/se/ta — all confident from VS (sa=aces, se=errors, ta=total serve attempts)
     x(`      <serve sa="${t_sa}" se="${t_se}" ta="${t_sta}">`);
     x(`      </serve>`);
+    // defense: dig confident; re=reception errors, ta=total reception attempts — both confident
     x(`      <defense dig="${t_dig}" re="${t_re}" ta="${t_rta}">`);
     x(`      </defense>`);
+    // block: bs=solos confident; ba=0 (VS combines into B#); be confident; tb derived
     x(`      <block bs="${t_bs}" ba="${t_ba}" be="${t_be}" tb="${ncaaTb(t_bs,t_ba)}">`);
     x(`      </block>`);
+    // misc: bhe not in VS API → 0; pts confident
     x(`      <misc bhe="0" pts="${ncaaPts(t_k,t_sa,t_bs,t_ba)}">`);
     x(`      </misc>`);
     x(`    </totals>`);
 
-    // Players — sorted: on-court first by zone, then bench
+    // Players — on-court first (sorted by zone), then bench
     const sorted=[...players].sort((a,b)=>{
       if(a.onCourt&&!b.onCourt)return -1;
       if(!a.onCourt&&b.onCourt)return 1;
       if(a.onCourt&&b.onCourt)return a.courtZone-b.courtZone;
       return 0;
     });
+
     sorted.forEach(p=>{
       const isServ=isServTeam&&String(p.jersey)===String(servNum);
       const ocAttr=p.onCourt?' oncourt="Y"':'';
       const libAttr=p.libero?' libero="Y"':'';
-      const msAttr=(p.onCourt||Number(p.sets_played)>0)?' ms="1"':'';
-      // Xpression gets zone and serving state directly on player element
-      const mlvPlayer=xpr&&p.onCourt?` mlvCourtZone="${p.courtZone}" mlvServing="${isServ?'Y':'N'}"`:xpr&&isServ?' mlvServing="Y"':'';
-      const checkname=p.name.toUpperCase();
-      const k=p.attack.kills, e=p.attack.errors, ta=p.attack.total;
-      const sa=p.serve.aces,  se=p.serve.errors, sta=p.serve.total;
-      const a=p.assists, dig=p.digs.total;
+      // ms="1" if player appeared in any set (positions array has non-null entry)
+      const started=p.positions.some(pos=>pos!==null&&pos!=='*');
+      const msAttr=started?' ms="1"':'';
+      // Xpression: court zone and serving state on player element
+      const mlvP=xpr&&p.onCourt
+        ?` mlvCourtZone="${p.courtZone}" mlvServing="${isServ?'Y':'N'}"`
+        :xpr&&isServ?' mlvServing="Y"':'';
+
+      const k=p.attack.kills, ae=p.attack.errors, ta=p.attack.total;
+      const sa=p.serve.aces,  se=p.serve.errors,  sta=p.serve.total;
+      const a=p.assists;
+      const dig=p.digs.total;
       const re=p.reception.errors||0, rta=p.reception.total||0;
       const bs=p.block.points, ba=0, be=p.block.errors||0;
 
-      x(`    <player uni="${esc(p.jersey)}" code="${esc(p.jersey)}" name="${esc(p.name)}" checkname="${esc(checkname)}"${ocAttr}${libAttr} gp="${p.sets_played}"${msAttr}${mlvPlayer}>`);
-      x(`      <attack k="${k}" e="${e}" ta="${ta}" pct="${ncaaPct(k,e,ta)}">`);
+      // checkname = full name uppercased ("LASTNAME, FIRSTNAME" if VS provides "Lastname, Firstname")
+      const checkname=p.name.toUpperCase();
+
+      x(`    <player uni="${e(p.jersey)}" code="${e(p.jersey)}" name="${e(p.name)}" checkname="${e(checkname)}"${ocAttr}${libAttr} gp="${p.sets_played}"${msAttr}${mlvP}>`);
+      x(`      <attack k="${k}" e="${ae}" ta="${ta}" pct="${ncaaPct(k,ae,ta)}">`);
       x(`      </attack>`);
       x(`      <set a="${a}" e="0" ta="0">`);
       x(`      </set>`);
@@ -1050,7 +1083,7 @@ function buildNCAA(d,mode){
       x(`    </player>`);
     });
 
-    // NCAA always ends with a TEAM placeholder row
+    // TEAM row — NCAA standard placeholder at end of player list
     x(`    <player uni="TM" code="TM" name="TEAM" checkname="TEAM" gp="${d.sets.length}">`);
     x(`      <attack k="0" e="0" ta="0" pct=".000">`);
     x(`      </attack>`);
@@ -1069,13 +1102,13 @@ function buildNCAA(d,mode){
     x(`  </team>`);
   }
 
-  // Visitor (away) first, then Home — NCAA convention
-  buildTeam('V',vName,d.awayPlayers,d.awayOnCourt,d.awayTeamStats,vscore,d.serve==='away',d.servingNum);
-  buildTeam('H',hName,d.homePlayers,d.homeOnCourt,d.homeTeamStats,hscore,d.serve==='home',d.servingNum);
+  // NCAA convention: visitor (away) listed first, home second
+  buildTeam('V',vName,d.awayPlayers,d.awayTeamStats,vscore,d.serve==='away',d.servingNum);
+  buildTeam('H',hName,d.homePlayers,d.homeTeamStats,hscore,d.serve==='home',d.servingNum);
 
   // ── Plays ───────────────────────────────────────────────────────────────────
-  // VS summary API does not provide play-by-play; include structurally complete
-  // empty game shells so parsers don't fail on missing <plays> section.
+  // VS summary API does not provide play-by-play.
+  // Include structurally complete empty game shells so parsers find the section.
   x(`  <plays format="summary">`);
   d.sets.forEach((_,i)=>{
     x(`    <game number="${i+1}">`);
@@ -1083,11 +1116,12 @@ function buildNCAA(d,mode){
   });
   x(`  </plays>`);
 
-  // ── Analysis (empty — NCAA standard) ────────────────────────────────────────
+  // ── Analysis (empty — NCAA standard section) ─────────────────────────────────
   x(`  <analysis>`);
   x(`  </analysis>`);
 
   // ── Lead changes ─────────────────────────────────────────────────────────────
+  // Not available from VS summary API → zeros in required structure
   x(`  <leadchanges ties="0" leads="0">`);
   d.sets.forEach((_,i)=>{
     x(`    <leadchange game="${i+1}" ties="0" leads="0">`);
@@ -1095,34 +1129,30 @@ function buildNCAA(d,mode){
   });
   x(`  </leadchanges>`);
 
-  // ── Breakdowns — visitor first, then home ────────────────────────────────────
+  // ── Breakdowns ───────────────────────────────────────────────────────────────
+  // Total-level values are confident. Per-game breakdown not in VS summary API → zeros.
   [{vh:'V',ts:d.awayTeamStats},{vh:'H',ts:d.homeTeamStats}].forEach(({vh,ts})=>{
     const k=ts.attack.kills, sa=ts.serve.aces, bs=ts.block.points, ba=0;
-    const eatk=ts.attack.errors, esvc=ts.serve.errors;
-    const ptsTotal=ncaaPts(k,sa,bs,ba);
-    x(`  <breakdowns vh="${vh}" pts="${ptsTotal}" kill="${k}" ace="${sa}" block="${bs}" eatk="${eatk}" esvc="${esvc}" ebhe="0">`);
+    x(`  <breakdowns vh="${vh}" pts="${ncaaPts(k,sa,bs,ba)}" kill="${k}" ace="${sa}" block="${bs}" eatk="${ts.attack.errors}" esvc="${ts.serve.errors}" ebhe="0">`);
     d.sets.forEach((_,i)=>{
-      // Per-set breakdown not in VS summary API — include structure with zeros
       x(`    <breakdown game="${i+1}" pts="0" kill="0" ace="0" block="0" eatk="0" esvc="0" ebhe="0">`);
       x(`    </breakdown>`);
     });
     x(`  </breakdowns>`);
   });
 
-  // ── On-court list (NCAA position: after breakdowns, last before close) ────────
+  // ── On-court list (NCAA position: after breakdowns) ───────────────────────────
   x(`  <oncourtlist>`);
-  // Away (visitor) players on court
   d.awayPlayers.filter(p=>p.onCourt).forEach(p=>{
     const isServ=d.serve==='away'&&String(p.jersey)===String(d.servingNum);
-    const mlvOc=xpr?` mlvCourtZone="${p.courtZone}" mlvServing="${isServ?'Y':'N'}" mlvLibero="${p.isLibero?'Y':'N'}"`:' ';
-    x(`    <oncourt vh="V" tm="${esc(vId)}" uni="${esc(p.jersey)}" name="${esc(p.name)}"${mlvOc}>`);
+    const mlvOc=xpr?` mlvCourtZone="${p.courtZone}" mlvLibero="${p.isLibero?'Y':'N'}" mlvServing="${isServ?'Y':'N'}"`:' ';
+    x(`    <oncourt vh="V" tm="${e(vCode)}" uni="${e(p.jersey)}" name="${e(p.name)}"${mlvOc}>`);
     x(`    </oncourt>`);
   });
-  // Home players on court
   d.homePlayers.filter(p=>p.onCourt).forEach(p=>{
     const isServ=d.serve==='home'&&String(p.jersey)===String(d.servingNum);
-    const mlvOc=xpr?` mlvCourtZone="${p.courtZone}" mlvServing="${isServ?'Y':'N'}" mlvLibero="${p.isLibero?'Y':'N'}"`:' ';
-    x(`    <oncourt vh="H" tm="${esc(hId)}" uni="${esc(p.jersey)}" name="${esc(p.name)}"${mlvOc}>`);
+    const mlvOc=xpr?` mlvCourtZone="${p.courtZone}" mlvLibero="${p.isLibero?'Y':'N'}" mlvServing="${isServ?'Y':'N'}"`:' ';
+    x(`    <oncourt vh="H" tm="${e(hCode)}" uni="${e(p.jersey)}" name="${e(p.name)}"${mlvOc}>`);
     x(`    </oncourt>`);
   });
   x(`  </oncourtlist>`);
