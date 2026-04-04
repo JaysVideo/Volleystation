@@ -24,9 +24,7 @@ header{background:var(--sf);border-bottom:1px solid var(--br);padding:0 20px;dis
 .cfg label{font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--mt);text-transform:uppercase}
 .cfg input,.cfg select{background:var(--bg);border:1px solid var(--br2);color:var(--tb);font-family:'JetBrains Mono',monospace;font-size:12px;padding:6px 10px;border-radius:4px;outline:none;transition:border-color .15s}
 .cfg input:focus,.cfg select:focus{border-color:var(--ac)}
-#tok{width:190px;letter-spacing:.12em}
-#msel{width:340px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600}
-#iv{width:72px}
+#tok{width:190px;letter-spacing:.12em}#msel{width:340px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600}#iv{width:72px}
 .btn{padding:7px 16px;border:none;border-radius:4px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;transition:all .15s}
 .bs{background:var(--ac);color:var(--bg)}.bs:hover{background:#33d5ff}
 .bp{background:transparent;color:var(--ac2);border:1px solid var(--ac2)}.bp:hover{background:var(--ac2);color:#fff}
@@ -36,6 +34,7 @@ header{background:var(--sf);border-bottom:1px solid var(--br);padding:0 20px;dis
 #cw{background:#140a00;border-bottom:1px solid #3a2000;padding:6px 20px;font-size:11px;color:var(--gd);display:flex;align-items:center;gap:8px}
 #cw code{background:#2a1500;padding:2px 6px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:10px}
 .dash{padding:16px 20px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+/* Score header */
 .sh{grid-column:1/-1;background:var(--sf);border:1px solid var(--br);border-radius:6px;padding:18px 24px;display:flex;align-items:center;justify-content:space-between}
 .st{min-width:180px}
 .sn{font-size:26px;font-weight:900;letter-spacing:.05em;color:var(--tb);text-transform:uppercase;line-height:1}
@@ -58,6 +57,7 @@ header{background:var(--sf);border-bottom:1px solid var(--br);padding:0 20px;dis
 .im{color:#ff9f00;border-color:#ff9f00;background:rgba(255,159,0,.1)}
 .it{color:var(--gd);border-color:var(--gd);background:rgba(245,197,66,.07)}
 .is{color:var(--mt);border-color:var(--br2)}
+/* Stat cards */
 .cds{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 .cd{background:var(--sf);border:1px solid var(--br);border-radius:6px;padding:12px 14px}
 .cl{font-size:9px;font-weight:700;color:var(--mt);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
@@ -67,6 +67,25 @@ header{background:var(--sf);border-bottom:1px solid var(--br);padding:0 20px;dis
 .csep{font-size:14px;color:var(--mt)}
 .cs{font-size:10px;color:var(--mt);margin-top:2px;font-family:'JetBrains Mono',monospace}
 .lu{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--tb);letter-spacing:.08em}
+/* Court grid */
+.court-row{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.court-panel{background:var(--sf);border:1px solid var(--br);border-radius:6px;overflow:hidden}
+.court-hdr{padding:9px 14px;background:var(--sf2);border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between}
+.court-title{font-size:12px;font-weight:900;color:var(--tb);letter-spacing:.08em;text-transform:uppercase}
+.court-sub{font-size:10px;color:var(--mt);letter-spacing:.1em;text-transform:uppercase}
+.court-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:10px}
+.court-zone{background:var(--sf2);border:1px solid var(--br);border-radius:5px;padding:8px 10px;position:relative;min-height:64px}
+.court-zone.on-court{border-color:var(--gn);background:rgba(34,212,107,.06)}
+.court-zone.serving{border-color:var(--gd);background:rgba(245,197,66,.08)}
+.court-zone.libero-zone{border-color:var(--ac);background:rgba(0,200,255,.06)}
+.court-zone.empty{opacity:.35}
+.zone-num{font-size:9px;font-weight:700;color:var(--mt);letter-spacing:.1em;position:absolute;top:5px;right:7px}
+.zone-jersey{font-size:18px;font-weight:900;font-family:'JetBrains Mono',monospace;color:var(--tb);line-height:1}
+.zone-name{font-size:11px;font-weight:600;color:var(--td);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.zone-stat{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--ac);margin-top:3px}
+.zone-lib-badge{display:inline-block;background:var(--ac);color:var(--bg);font-size:8px;font-weight:700;padding:1px 4px;border-radius:2px;margin-left:4px;vertical-align:middle}
+.zone-serve-badge{display:inline-block;background:var(--gd);color:var(--bg);font-size:8px;font-weight:700;padding:1px 4px;border-radius:2px;margin-left:4px;vertical-align:middle}
+/* Player tables */
 .tp{background:var(--sf);border:1px solid var(--br);border-radius:6px;overflow:hidden}
 .tph{padding:10px 14px;background:var(--sf2);border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between}
 .tpn{font-size:14px;font-weight:900;letter-spacing:.08em;color:var(--tb);text-transform:uppercase}
@@ -77,25 +96,38 @@ header{background:var(--sf);border-bottom:1px solid var(--br);padding:0 20px;dis
 .tw{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:11px}
 thead th{padding:5px 8px;background:var(--bg);color:var(--mt);font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;text-align:right;white-space:nowrap;border-bottom:1px solid var(--br)}
-thead th:first-child,thead th:nth-child(2){text-align:left}
+thead th:first-child,thead th:nth-child(2),thead th:nth-child(3){text-align:left}
 tbody tr{border-bottom:1px solid rgba(30,42,53,.6);transition:background .1s}
 tbody tr:hover{background:var(--sf2)}
+tbody tr.on-court-row{background:rgba(34,212,107,.04)}
+tbody tr.on-court-row td:nth-child(2){color:var(--gn)}
+tbody tr.serving-row{background:rgba(245,197,66,.05)}
+tbody tr.serving-row td:nth-child(2){color:var(--gd)}
 td{padding:6px 8px;text-align:right;white-space:nowrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--tx)}
 td:first-child{text-align:left;font-weight:700;color:var(--mt);width:28px}
 td:nth-child(2){text-align:left;color:var(--tb);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;min-width:130px}
+td:nth-child(3){text-align:left;width:50px}
 td.hl{color:var(--ac);font-weight:700}td.z{color:var(--mt)}td.eg{color:var(--gn)}td.eb{color:var(--ac2)}
+/* On-court status badge */
+.oc-badge{display:inline-flex;align-items:center;gap:3px;padding:1px 5px;border-radius:2px;font-size:9px;font-weight:700;letter-spacing:.06em;font-family:'Barlow Condensed',sans-serif}
+.oc-on{background:rgba(34,212,107,.15);color:var(--gn);border:1px solid rgba(34,212,107,.3)}
+.oc-serve{background:rgba(245,197,66,.15);color:var(--gd);border:1px solid rgba(245,197,66,.3)}
+.oc-lib{background:rgba(0,200,255,.15);color:var(--ac);border:1px solid rgba(0,200,255,.3)}
+.oc-bench{color:var(--mt);font-size:9px}
+/* XML panel */
 .xpanel{grid-column:1/-1;background:var(--sf);border:1px solid var(--br);border-radius:6px;overflow:hidden;display:none}
 .xpanel.open{display:block}
-.xhdr{background:var(--sf2);border-bottom:1px solid var(--br);padding:8px 14px;display:flex;align-items:center;gap:8px}
+.xhdr{background:var(--sf2);border-bottom:1px solid var(--br);padding:8px 14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .xtitle{font-size:12px;font-weight:700;color:var(--gd)}
 .xtabs{display:flex;gap:4px;margin-left:12px}
 .xtab{padding:3px 10px;border-radius:3px;cursor:pointer;font-size:10px;font-weight:700;letter-spacing:.08em;background:transparent;border:1px solid var(--br2);color:var(--mt);transition:all .1s;font-family:'Barlow Condensed',sans-serif}
 .xtab.on{background:var(--gd);color:var(--bg);border-color:var(--gd)}
+.xnote{font-size:10px;color:var(--mt);margin-left:8px;font-style:italic}
 .xbtn{margin-left:auto;padding:3px 10px;cursor:pointer;font-size:10px;font-weight:700;background:transparent;border:1px solid var(--br2);color:var(--tx);border-radius:3px;font-family:'Barlow Condensed',sans-serif}
 .xbtn:hover{border-color:var(--ac);color:var(--ac)}
 .xdl{padding:3px 10px;cursor:pointer;font-size:10px;font-weight:700;background:transparent;border:1px solid var(--br2);color:var(--tx);border-radius:3px;font-family:'Barlow Condensed',sans-serif;text-decoration:none;display:inline-block}
 .xdl:hover{border-color:var(--gd);color:var(--gd)}
-pre.xout{background:var(--bg);padding:12px 14px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#7ec8e3;overflow:auto;max-height:380px;line-height:1.6}
+pre.xout{background:var(--bg);padding:12px 14px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#7ec8e3;overflow:auto;max-height:400px;line-height:1.6}
 pre.xout .tg{color:#569cd6}pre.xout .at{color:#9cdcfe}pre.xout .vl{color:#ce9178}pre.xout .cm{color:#4a607080}
 .empty{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:70px 24px;gap:14px;color:var(--mt);text-align:center}
 .emptyicon{font-size:56px;opacity:.25}.emptytitle{font-size:20px;font-weight:700}.emptysub{font-size:13px;max-width:380px;line-height:1.6}
@@ -118,7 +150,7 @@ pre.xout .tg{color:#569cd6}pre.xout .at{color:#9cdcfe}pre.xout .vl{color:#ce9178
   <input type="password" id="tok" placeholder="VolleyStation token" autocomplete="off">
   <div class="dv"></div>
   <label>2026 Match</label>
-  <select id="msel"><option value="">— Select a match —</option></select>
+  <select id="msel"><option value="">&#8212; Select a match &#8212;</option></select>
   <input type="text" id="manId" placeholder="Match ID" style="display:none;width:110px">
   <div class="dv"></div>
   <label>Interval</label>
@@ -129,36 +161,73 @@ pre.xout .tg{color:#569cd6}pre.xout .at{color:#9cdcfe}pre.xout .vl{color:#ce9178
   <div class="dv"></div>
   <button class="btn bx" id="btnX" onclick="toggleXml()" disabled>&#8595; XML</button>
 </div>
-<div id="cw">&#9889; Attempts direct API call first. If blocked by CORS, run <code>node proxy.js</code> and it retries automatically.
-  <span id="cok" style="color:var(--gn);display:none">&#10003; Direct API working &mdash; no proxy needed</span></div>
+<div id="cw">&#9889; Attempts direct API call first &#8212; no proxy needed. If blocked by CORS, run <code>node proxy.js</code> and it retries automatically.
+  <span id="cok" style="color:var(--gn);display:none">&#10003; Direct API working &#8212; no proxy needed</span></div>
 <div class="dash" id="dash">
   <div class="errpanel" id="ep"><div class="errtitle" id="et">Error</div><div class="errmsg" id="em"></div><div class="errhint" id="eh"></div></div>
-  <div class="empty" id="empty"><div class="emptyicon">&#127904;</div><div class="emptytitle">Ready to go</div><div class="emptysub">Select a 2026 match from the dropdown, enter your API token, and hit Start. Stats refresh live throughout the game.</div></div>
+  <div class="empty" id="empty"><div class="emptyicon">&#127904;</div><div class="emptytitle">Ready to go</div><div class="emptysub">Select a 2026 match from the dropdown, enter your API token, and hit Start. Stats update live and XML exports for Xpression and Daktronics.</div></div>
+
+  <!-- Score header -->
   <div class="sh fi" id="sh" style="display:none">
     <div class="st"><div class="sn" id="hn"></div><div class="sm" id="hm"></div></div>
     <div class="sc">
-      <div class="ss"><div class="sv" id="hs">0</div><div class="sd">&ndash;</div><div class="sv" id="aws">0</div></div>
+      <div class="ss"><div class="sv" id="hs">0</div><div class="sd">&#8211;</div><div class="sv" id="aws">0</div></div>
       <div class="chips" id="ch"></div>
       <div class="inds" id="ind"></div>
     </div>
     <div class="st"><div class="sn aw" id="an"></div><div class="sm aw" id="am"></div></div>
   </div>
+
+  <!-- Stat cards -->
   <div class="cds fi" id="cds" style="display:none">
-    <div class="cd"><div class="cl">Timeouts Left</div><div class="cb"><div><div class="cv h" id="hto"></div><div class="cs">Home</div></div><div class="csep">|</div><div><div class="cv a" id="ato"></div><div class="cs">Away</div></div></div></div>
-    <div class="cd"><div class="cl">Substitutions Left</div><div class="cb"><div><div class="cv h" id="hsub"></div><div class="cs">Home</div></div><div class="csep">|</div><div><div class="cv a" id="asub"></div><div class="cs">Away</div></div></div></div>
-    <div class="cd"><div class="cl">Home Lineup</div><div class="cb" style="align-items:center"><div class="lu" id="hlu"></div></div></div>
-    <div class="cd"><div class="cl">Away Lineup</div><div class="cb" style="align-items:center"><div class="lu" id="alu"></div></div></div>
+    <div class="cd"><div class="cl">Timeouts Left</div><div class="cb"><div><div class="cv h" id="hto">&#8212;</div><div class="cs">Home</div></div><div class="csep">|</div><div><div class="cv a" id="ato">&#8212;</div><div class="cs">Away</div></div></div></div>
+    <div class="cd"><div class="cl">Substitutions Left</div><div class="cb"><div><div class="cv h" id="hsub">&#8212;</div><div class="cs">Home</div></div><div class="csep">|</div><div><div class="cv a" id="asub">&#8212;</div><div class="cs">Away</div></div></div></div>
+    <div class="cd"><div class="cl">Home On Court</div><div class="cb" style="align-items:center"><div class="lu" id="hlu">&#8212;</div></div></div>
+    <div class="cd"><div class="cl">Away On Court</div><div class="cb" style="align-items:center"><div class="lu" id="alu">&#8212;</div></div></div>
   </div>
+
+  <!-- Court view: zone-by-zone grid -->
+  <div class="court-row fi" id="courtRow" style="display:none">
+    <div class="court-panel">
+      <div class="court-hdr"><div class="court-title" id="hCourtName">Home</div><div class="court-sub">Current Court &#8211; Zones 1&#8211;6</div></div>
+      <div class="court-grid" id="hCourtGrid"></div>
+    </div>
+    <div class="court-panel">
+      <div class="court-hdr"><div class="court-title" id="aCourtName">Away</div><div class="court-sub">Current Court &#8211; Zones 1&#8211;6</div></div>
+      <div class="court-grid" id="aCourtGrid"></div>
+    </div>
+  </div>
+
+  <!-- Team tables: all players with on-court status column -->
   <div class="tp fi" id="hp" style="display:none">
-    <div class="tph"><div><div class="tpn" id="hpn">Home</div><div class="tps">Home Team</div></div><div class="ag" id="hag"></div></div>
-    <div class="tw"><table><thead><tr><th>#</th><th>Player</th><th>SP</th><th>PTS</th><th>ACE</th><th>SrvE</th><th>RecT</th><th>Pos%</th><th>Prf%</th><th>AtkT</th><th>K</th><th>AtkE</th><th>Eff</th><th>BlkP</th><th>Dig</th><th>Ast</th></tr></thead><tbody id="hbd"></tbody></table></div>
+    <div class="tph"><div><div class="tpn" id="hpn">Home</div><div class="tps">All Players</div></div><div class="ag" id="hag"></div></div>
+    <div class="tw"><table><thead><tr>
+      <th>#</th><th>Player</th><th>Court</th><th>SP</th><th>PTS</th>
+      <th>ACE</th><th>SrvE</th><th>RecT</th><th>Pos%</th><th>Prf%</th>
+      <th>AtkT</th><th>K</th><th>AtkE</th><th>Eff</th><th>BlkP</th><th>Dig</th><th>Ast</th>
+    </tr></thead><tbody id="hbd"></tbody></table></div>
   </div>
   <div class="tp fi" id="ap" style="display:none">
-    <div class="tph"><div><div class="tpn" id="apn">Away</div><div class="tps">Away Team</div></div><div class="ag" id="aag"></div></div>
-    <div class="tw"><table><thead><tr><th>#</th><th>Player</th><th>SP</th><th>PTS</th><th>ACE</th><th>SrvE</th><th>RecT</th><th>Pos%</th><th>Prf%</th><th>AtkT</th><th>K</th><th>AtkE</th><th>Eff</th><th>BlkP</th><th>Dig</th><th>Ast</th></tr></thead><tbody id="abd"></tbody></table></div>
+    <div class="tph"><div><div class="tpn" id="apn">Away</div><div class="tps">All Players</div></div><div class="ag" id="aag"></div></div>
+    <div class="tw"><table><thead><tr>
+      <th>#</th><th>Player</th><th>Court</th><th>SP</th><th>PTS</th>
+      <th>ACE</th><th>SrvE</th><th>RecT</th><th>Pos%</th><th>Prf%</th>
+      <th>AtkT</th><th>K</th><th>AtkE</th><th>Eff</th><th>BlkP</th><th>Dig</th><th>Ast</th>
+    </tr></thead><tbody id="abd"></tbody></table></div>
   </div>
+
+  <!-- XML panel -->
   <div class="xpanel" id="xp">
-    <div class="xhdr"><div class="xtitle">XML Output</div><div class="xtabs"><button class="xtab on" onclick="swTab('xpression')">Xpression</button><button class="xtab" onclick="swTab('daktronics')">Daktronics</button></div><button class="xbtn" onclick="cpXml()">Copy</button><a class="xdl" href="#" onclick="dlXml(event)">Download</a></div>
+    <div class="xhdr">
+      <div class="xtitle">&#128196; XML Output</div>
+      <div class="xtabs">
+        <button class="xtab on" onclick="swTab('xpression')">Xpression</button>
+        <button class="xtab" onclick="swTab('daktronics')">Daktronics</button>
+      </div>
+      <span class="xnote" id="xnote">Includes on-court zone slots + full roster</span>
+      <button class="xbtn" onclick="cpXml()">Copy</button>
+      <a class="xdl" href="#" onclick="dlXml(event)">Download</a>
+    </div>
     <pre class="xout" id="xo"></pre>
   </div>
 </div>
@@ -167,50 +236,49 @@ const M=[{"id": 2256597, "home": "Atlanta Vibe", "away": "Columbus Fury", "dt": 
 
 const API='https://panel.volleystation.com/api';
 const PROXY='http://localhost:3030';
-let useProxy=false, curData=null, xmlTab='xpression', timer=null;
+let useProxy=false,curData=null,xmlTab='xpression',pollTimer=null;
 
-// Populate dropdown
+// ── Dropdown ──────────────────────────────────────────────────────────────────
 const sel=document.getElementById('msel');
 const today=new Date().toISOString().slice(0,10);
 let tg=null,ug=null;
 M.forEach(m=>{
-  const isT=m.dt.startsWith(today), isPast=m.dt.slice(0,10)<today;
+  const d0=m.dt.slice(0,10);
+  const isT=d0===today,isPast=d0<today;
   if(isT&&!tg){tg=document.createElement('optgroup');tg.label='Today';sel.appendChild(tg);}
   if(!isPast&&!isT&&!ug){ug=document.createElement('optgroup');ug.label='Upcoming';sel.appendChild(ug);}
   const dt=m.dt.replace(/:\d\d [A-Z]+$/,'');
-  const lbl=`${dt} \u2014 ${m.home} vs ${m.away}${m.bc?' ['+m.bc+']':''} (${m.id})`;
-  const o=new Option(lbl,m.id);
-  if(isT)tg?.appendChild(o);
-  else if(!isPast)ug?.appendChild(o);
+  const o=new Option(`${dt} \u2014 ${m.home} vs ${m.away}${m.bc?' ['+m.bc+']':''} (${m.id})`,m.id);
+  if(isT)tg?.appendChild(o);else if(!isPast)ug?.appendChild(o);
 });
-const mo=new Option('\u2014 Enter ID manually \u2014','__manual__');
-sel.appendChild(mo);
+sel.appendChild(new Option('\u2014 Enter ID manually \u2014','__manual__'));
 sel.addEventListener('change',()=>{
   const mi=document.getElementById('manId');
-  if(sel.value==='__manual__'){mi.style.display='inline-block';mi.focus();}
-  else mi.style.display='none';
+  mi.style.display=sel.value==='__manual__'?'inline-block':'none';
+  if(sel.value==='__manual__')mi.focus();
 });
+function getMid(){return sel.value==='__manual__'?document.getElementById('manId').value.trim():sel.value;}
 
-function getMid(){
-  if(sel.value==='__manual__')return document.getElementById('manId').value.trim();
-  return sel.value;
-}
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const sk=(s,c,e)=>Number(s?.[c]?.[e]??0);
+const skS=(s,c)=>{const x=s?.[c]||{};return Object.values(x).reduce((a,b)=>a+(Number(b)||0),0);};
+const pctFmt=v=>{const n=parseFloat(v);return(!v||isNaN(n)||n===0)?'-':(n*100).toFixed(1)+'%';};
+const effCls=v=>{const n=parseFloat(v);return isNaN(n)?'':n>=.35?'eg':n<0?'eb':'';};
+const nc=n=>Number(n)===0?'z':'hl';
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-// Stat helpers
-function sk(s,c,e){return Number(s?.[c]?.[e]??0);}
-function skS(s,c){const x=s?.[c]||{};return Object.values(x).reduce((a,b)=>a+(Number(b)||0),0);}
-function pct(v){const n=parseFloat(v);if(isNaN(n)||!v||v==='0')return'-';return(n*100).toFixed(1)+'%';}
-function efc(v){const n=parseFloat(v);if(isNaN(n))return'';return n>=.35?'eg':n<0?'eb':'';}
-function nc(n){return Number(n)===0?'z':'hl';}
-function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-
-function normP(r){
-  const t=r.total||{},s=t.skills||{},p=t.points||{},pct2=t.percentages||{},e=t.efficiencies||{},err=t.errors||{};
-  const nm=[r.name,r.surname].filter(Boolean).join(' ')||r.shirtName||'Unknown';
+// ── Normalize player from API ──────────────────────────────────────────────────
+function normP(raw){
+  const t=raw.total||{},s=t.skills||{},p=t.points||{},pct2=t.percentages||{},e=t.efficiencies||{},err=t.errors||{};
+  const nm=[raw.name,raw.surname].filter(Boolean).join(' ')||raw.shirtName||'Unknown';
   return{
-    jersey:String(r.shirtNumber??''),name:nm,shirt_name:r.shirtName||nm,
-    libero:r.libero||false,captain:r.captain||false,
-    sets_played:String((r.positions||[]).filter(x=>x!==null).length),
+    jersey:String(raw.shirtNumber??''),
+    name:nm,
+    shirt_name:raw.shirtName||nm,
+    libero:raw.libero||false,
+    captain:raw.captain||false,
+    positions:raw.positions||[],  // per-set: null/"1-6"/"*"
+    sets_played:String((raw.positions||[]).filter(x=>x!==null).length),
     points:{total:p.total??0,side_out:p.sideOut??0,break_point:p.breakPoint??0},
     errors:{total:err.total??0},
     serve:{total:skS(s,'S'),aces:sk(s,'S','#'),errors:sk(s,'S','='),eff:e.S??''},
@@ -218,10 +286,50 @@ function normP(r){
     attack:{total:skS(s,'A'),kills:sk(s,'A','#'),errors:sk(s,'A','='),pct:e.A??''},
     block:{points:sk(s,'B','#'),errors:sk(s,'B','=')},
     digs:{total:sk(s,'D','#')},
-    assists:t.assists??0
+    assists:t.assists??0,
+    // on-court state — populated by resolveCourtState() below
+    onCourt:false,
+    courtZone:0,       // 1-6 rotation zone, 0 = bench
+    isLibero:false,
+    isServing:false,
   };
 }
 
+// ── Court state resolution ──────────────────────────────────────────────────────
+// lineup_home/guest = [jersey#, jersey#, jersey#, jersey#, jersey#, jersey#]
+//   Index 0 = zone 1, index 1 = zone 2, ... index 5 = zone 6
+// libero_replacing_home/guest = jersey# of player the libero replaced
+// libero_number_home/guest = jersey# of the libero
+// serving_player_number = jersey# of current server (if serve === 'home'/'away')
+function resolveCourtState(players, lineup, liberoJersey, liberoReplacing, servingJersey, servingTeam, teamType){
+  // Build a map jersey -> player
+  const byJersey={};
+  players.forEach(p=>byJersey[String(p.jersey)]=p);
+
+  // Reset all
+  players.forEach(p=>{p.onCourt=false;p.courtZone=0;p.isLibero=false;p.isServing=false;});
+
+  if(!lineup||lineup.length===0) return;
+
+  lineup.forEach((jerseyNum,idx)=>{
+    const zone=idx+1; // zones 1-6
+    const jerseyStr=String(jerseyNum);
+    const p=byJersey[jerseyStr];
+    if(p){
+      p.onCourt=true;
+      p.courtZone=zone;
+      // Mark libero
+      if(String(liberoJersey)===jerseyStr) p.isLibero=true;
+      // Mark server
+      if(servingTeam===teamType && String(servingJersey)===jerseyStr) p.isServing=true;
+    }
+  });
+
+  // The libero replaces someone — that player is on bench but show them as "L out"
+  // (no special flag needed; they'll just have onCourt=false naturally)
+}
+
+// ── API fetch ─────────────────────────────────────────────────────────────────
 async function vsGet(path){
   const tok=document.getElementById('tok').value.trim();
   if(!useProxy){
@@ -231,23 +339,22 @@ async function vsGet(path){
       if(r.status===401)throw new Error('HTTP 401 \u2014 check your API token');
       if(r.status===404)throw new Error('HTTP 404 \u2014 match ID not found');
       throw new Error(`HTTP ${r.status}`);
-    }catch(e){
-      if(e.message.includes('401')||e.message.includes('404'))throw e;
-      useProxy=true;
-    }
+    }catch(e){if(e.message.includes('401')||e.message.includes('404'))throw e;useProxy=true;}
   }
   const r=await fetch(`${PROXY}/vs?path=${encodeURIComponent(path)}&token=${encodeURIComponent(tok)}`,{signal:AbortSignal.timeout(8000)});
   if(!r.ok){const t=await r.text().catch(()=>'');throw new Error(`Proxy: HTTP ${r.status} ${t.slice(0,80)}`);}
   return r.json();
 }
 
+// ── Main fetch & build ────────────────────────────────────────────────────────
 async function fetchAndRender(){
   const mid=getMid();if(!mid)return;
   try{
     setSt('loading','Fetching\u2026');
     const[stats,match]=await Promise.all([vsGet(`match-stats-summary/${mid}`),vsGet(`Matches/${mid}?show_timer=1`)]);
     curData=buildData(stats,match,mid);
-    render(curData);renderXml();
+    render(curData);
+    renderXml();
     setSt('live','Live');
     document.getElementById('upd').textContent='Updated '+new Date().toLocaleTimeString();
     hideErr();
@@ -260,41 +367,71 @@ function buildData(stats,match,mid){
   const sets=[];
   for(let i=1;i<=5;i++){const h=match[`Set${i}Home`]??0,a=match[`Set${i}Guest`]??0;if(h>0||a>0)sets.push({home:h,away:a});}
   const w=match.widget||{};
+
+  const homePlayers=(stats.home?.players||[]).map(normP);
+  const awayPlayers=(stats.away?.players||[]).map(normP);
+
+  // Resolve who is on court right now
+  resolveCourtState(
+    homePlayers, w.lineup_home||[],
+    w.libero_number_home, w.libero_replacing_home,
+    w.serving_player_number, w.serve, 'home'
+  );
+  resolveCourtState(
+    awayPlayers, w.lineup_guest||[],
+    w.libero_number_guest, w.libero_replacing_guest,
+    w.serving_player_number, w.serve, 'away'
+  );
+
+  // Build sorted on-court arrays (zone order 1-6)
+  const homeOnCourt=[...Array(6)].map((_,i)=>homePlayers.find(p=>p.courtZone===i+1)||null);
+  const awayOnCourt=[...Array(6)].map((_,i)=>awayPlayers.find(p=>p.courtZone===i+1)||null);
+
   return{
     matchId:String(mid),timestamp:new Date().toISOString(),
     homeTeam:ht,awayTeam:at,sets,
     wonHome:match.WonSetHome??0,wonAway:match.WonSetGuest??0,
     curSet:w.current_set??sets.length+1,
-    serve:w.serve||'',servingNum:w.serving_player_number??'',
+    serve:w.serve||'',servingNum:String(w.serving_player_number??''),
     lineupHome:w.lineup_home||[],lineupAway:w.lineup_guest||[],
-    liberoHome:w.libero_number_home??'',liberoAway:w.libero_number_guest??'',
+    liberoHome:String(w.libero_number_home??''),liberoAway:String(w.libero_number_guest??''),
+    liberoReplacingHome:String(w.libero_replacing_home??''),
+    liberoReplacingAway:String(w.libero_replacing_guest??''),
     timeouts:match.timeout_count||[2,2],subs:match.substitution_count||[6,6],
     challenges:match.challenge_count||[2,2],
     setBalls:match.set_ball_count||[0,0],matchBalls:match.match_ball_count||[0,0],
     timer:match.timer||null,
-    homePlayers:(stats.home?.players||[]).map(normP),
-    awayPlayers:(stats.away?.players||[]).map(normP),
+    homePlayers, awayPlayers,
+    homeOnCourt, awayOnCourt,
     homeTeamStats:normP({...(stats.home?.team||{}),name:'',surname:'',shirtNumber:'TEAM',positions:[]}),
     awayTeamStats:normP({...(stats.away?.team||{}),name:'',surname:'',shirtNumber:'TEAM',positions:[]}),
   };
 }
 
+// ── Render dashboard ──────────────────────────────────────────────────────────
 function render(d){
   document.getElementById('empty').style.display='none';
   document.getElementById('sh').style.display='flex';
   document.getElementById('cds').style.display='grid';
+  document.getElementById('courtRow').style.display='grid';
   document.getElementById('hp').style.display='block';
   document.getElementById('ap').style.display='block';
+
+  // Score
   const hw=d.wonHome,aw=d.wonAway;
   document.getElementById('hn').textContent=d.homeTeam;
   document.getElementById('an').textContent=d.awayTeam;
   const he=document.getElementById('hs'),ae=document.getElementById('aws');
   he.textContent=hw;ae.textContent=aw;
   he.className='sv'+(hw>aw?' ld':'');ae.className='sv'+(aw>hw?' ld':'');
-  document.getElementById('ch').innerHTML=d.sets.map(s=>`<div class="chip"><span class="${s.home>s.away?'w':''}">${s.home}</span>-<span class="${s.away>s.home?'w':''}">${s.away}</span></div>`).join('');
+
+  document.getElementById('ch').innerHTML=d.sets.map(s=>
+    `<div class="chip"><span class="${s.home>s.away?'w':''}">${s.home}</span>-<span class="${s.away>s.home?'w':''}">${s.away}</span></div>`
+  ).join('');
+
   const iH=[];
-  if(d.serve==='home')iH.push(`<span class="ind ih">&#9654; ${d.homeTeam.split(' ')[0]} Serve${d.servingNum?' #'+d.servingNum:''}</span>`);
-  if(d.serve==='away')iH.push(`<span class="ind ia">&#9654; ${d.awayTeam.split(' ')[0]} Serve${d.servingNum?' #'+d.servingNum:''}</span>`);
+  if(d.serve==='home')iH.push(`<span class="ind ih">&#9654; ${d.homeTeam.split(' ')[0]} Serve #${d.servingNum}</span>`);
+  if(d.serve==='away')iH.push(`<span class="ind ia">&#9654; ${d.awayTeam.split(' ')[0]} Serve #${d.servingNum}</span>`);
   if(d.setBalls[0]>0)iH.push(`<span class="ind ib">Set Ball x${d.setBalls[0]}</span>`);
   if(d.setBalls[1]>0)iH.push(`<span class="ind ib">Set Ball x${d.setBalls[1]}</span>`);
   if(d.matchBalls[0]>0||d.matchBalls[1]>0)iH.push('<span class="ind im">Match Ball</span>');
@@ -303,16 +440,54 @@ function render(d){
   if(d.timer?.timer_type==='technical')iH.push('<span class="ind it">Technical TO</span>');
   iH.push(`<span class="ind is">Set ${d.curSet}</span>`);
   document.getElementById('ind').innerHTML=iH.join('');
+
   document.getElementById('hto').textContent=d.timeouts[0];
   document.getElementById('ato').textContent=d.timeouts[1];
   document.getElementById('hsub').textContent=d.subs[0];
   document.getElementById('asub').textContent=d.subs[1];
-  document.getElementById('hlu').textContent=d.lineupHome.length?d.lineupHome.join(' \u00b7 '):'—';
-  document.getElementById('alu').textContent=d.lineupAway.length?d.lineupAway.join(' \u00b7 '):'—';
+
+  // On-court summary (jersey numbers in zone order)
+  const ocSummary=oc=>oc.map((p,i)=>p?`<span style="color:var(--gn);font-weight:700">${p.jersey}</span>`:'-').join(' ');
+  document.getElementById('hlu').innerHTML=d.homeOnCourt.some(Boolean)?ocSummary(d.homeOnCourt):'Not started';
+  document.getElementById('alu').innerHTML=d.awayOnCourt.some(Boolean)?ocSummary(d.awayOnCourt):'Not started';
+
+  // Court grids
+  document.getElementById('hCourtName').textContent=d.homeTeam;
+  document.getElementById('aCourtName').textContent=d.awayTeam;
+  renderCourtGrid('hCourtGrid',d.homeOnCourt,d.serve==='home',d.servingNum);
+  renderCourtGrid('aCourtGrid',d.awayOnCourt,d.serve==='away',d.servingNum);
+
+  // Team tables
   document.getElementById('hpn').textContent=d.homeTeam;
   document.getElementById('apn').textContent=d.awayTeam;
   renderAgg('hag',d.homeTeamStats);renderAgg('aag',d.awayTeamStats);
-  renderTbl('hbd',d.homePlayers);renderTbl('abd',d.awayPlayers);
+  renderTbl('hbd',d.homePlayers,d.serve==='home',d.servingNum);
+  renderTbl('abd',d.awayPlayers,d.serve==='away',d.servingNum);
+}
+
+// Volleyball court zone layout:
+//   Back row (from left):  zone 5 | zone 6 | zone 1
+//   Front row (from left): zone 4 | zone 3 | zone 2
+// We display in grid order matching a standard volleyball diagram
+const ZONE_DISPLAY_ORDER=[4,3,2,5,6,1]; // front-left to back-right
+
+function renderCourtGrid(id,onCourt,isServingTeam,servingJersey){
+  const el=document.getElementById(id);
+  el.innerHTML=ZONE_DISPLAY_ORDER.map(zone=>{
+    const p=onCourt[zone-1]; // onCourt[0]=zone1, [1]=zone2, etc.
+    if(!p){
+      return `<div class="court-zone empty"><span class="zone-num">${zone}</span><div class="zone-jersey" style="color:var(--mt)">&#8212;</div></div>`;
+    }
+    const isServ=isServingTeam&&String(p.jersey)===String(servingJersey);
+    const cls=p.isLibero?'court-zone libero-zone':isServ?'court-zone serving':'court-zone on-court';
+    const statLine=p.attack.kills>0?`${p.attack.kills}K`:p.serve.aces>0?`${p.serve.aces}A`:p.block.points>0?`${p.block.points}B`:p.digs.total>0?`${p.digs.total}D`:p.assists>0?`${p.assists}Ast`:'';
+    return `<div class="${cls}">
+      <span class="zone-num">${zone}</span>
+      <div class="zone-jersey">#${p.jersey}${p.isLibero?'<span class="zone-lib-badge">L</span>':''}${isServ?'<span class="zone-serve-badge">SRV</span>':''}</div>
+      <div class="zone-name">${p.shirt_name||p.name}</div>
+      ${statLine?`<div class="zone-stat">${statLine}</div>`:''}
+    </div>`;
+  }).join('');
 }
 
 function renderAgg(id,s){
@@ -320,66 +495,144 @@ function renderAgg(id,s){
     .map(([l,v])=>`<div style="text-align:center"><div class="agv">${v}</div><div class="agl">${l}</div></div>`).join('');
 }
 
-function renderTbl(id,players){
-  document.getElementById(id).innerHTML=players.map(p=>`<tr>
-    <td>${p.jersey}</td>
-    <td>${p.shirt_name||p.name}${p.libero?'<span style="color:var(--gd);font-size:9px;margin-left:3px">L</span>':''}</td>
-    <td class="${p.sets_played==='0'?'z':''}">${p.sets_played}</td>
-    <td class="${nc(p.points.total)}">${p.points.total}</td>
-    <td class="${nc(p.serve.aces)}">${p.serve.aces}</td>
-    <td class="${p.serve.errors>0?'eb':'z'}">${p.serve.errors}</td>
-    <td class="${p.reception.total===0?'z':''}">${p.reception.total||'-'}</td>
-    <td>${p.reception.total?pct(p.reception.pos_pct):'-'}</td>
-    <td>${p.reception.total?pct(p.reception.perf_pct):'-'}</td>
-    <td class="${p.attack.total===0?'z':''}">${p.attack.total||'-'}</td>
-    <td class="${nc(p.attack.kills)}">${p.attack.kills}</td>
-    <td class="${p.attack.errors>0?'eb':'z'}">${p.attack.errors||'-'}</td>
-    <td class="${efc(p.attack.pct)}">${p.attack.pct?(parseFloat(p.attack.pct)*100).toFixed(1)+'%':'-'}</td>
-    <td class="${nc(p.block.points)}">${p.block.points}</td>
-    <td class="${p.digs.total===0?'z':''}">${p.digs.total||'-'}</td>
-    <td class="${p.assists===0?'z':''}">${p.assists||'-'}</td>
-  </tr>`).join('');
+function renderTbl(id,players,isServingTeam,servingJersey){
+  // Sort: on-court first (by zone), then bench
+  const sorted=[...players].sort((a,b)=>{
+    if(a.onCourt&&!b.onCourt)return -1;
+    if(!a.onCourt&&b.onCourt)return 1;
+    if(a.onCourt&&b.onCourt)return a.courtZone-b.courtZone;
+    return 0;
+  });
+  document.getElementById(id).innerHTML=sorted.map(p=>{
+    const isServ=isServingTeam&&String(p.jersey)===String(servingJersey);
+    const rowCls=isServ?'serving-row':p.onCourt?'on-court-row':'';
+    let courtBadge='';
+    if(p.isLibero) courtBadge='<span class="oc-badge oc-lib">LIB</span>';
+    else if(isServ) courtBadge='<span class="oc-badge oc-serve">SRV</span>';
+    else if(p.onCourt) courtBadge=`<span class="oc-badge oc-on">Z${p.courtZone}</span>`;
+    else courtBadge='<span class="oc-bench">bench</span>';
+    return `<tr class="${rowCls}">
+      <td>${p.jersey}</td>
+      <td>${p.shirt_name||p.name}${p.captain?'<span style="color:var(--gd);font-size:9px;margin-left:3px">&copy;</span>':''}</td>
+      <td>${courtBadge}</td>
+      <td class="${p.sets_played==='0'?'z':''}">${p.sets_played}</td>
+      <td class="${nc(p.points.total)}">${p.points.total}</td>
+      <td class="${nc(p.serve.aces)}">${p.serve.aces}</td>
+      <td class="${p.serve.errors>0?'eb':'z'}">${p.serve.errors||'-'}</td>
+      <td class="${p.reception.total===0?'z':''}">${p.reception.total||'-'}</td>
+      <td>${p.reception.total?pctFmt(p.reception.pos_pct):'-'}</td>
+      <td>${p.reception.total?pctFmt(p.reception.perf_pct):'-'}</td>
+      <td class="${p.attack.total===0?'z':''}">${p.attack.total||'-'}</td>
+      <td class="${nc(p.attack.kills)}">${p.attack.kills}</td>
+      <td class="${p.attack.errors>0?'eb':'z'}">${p.attack.errors||'-'}</td>
+      <td class="${effCls(p.attack.pct)}">${p.attack.pct?(parseFloat(p.attack.pct)*100).toFixed(1)+'%':'-'}</td>
+      <td class="${nc(p.block.points)}">${p.block.points}</td>
+      <td class="${p.digs.total===0?'z':''}">${p.digs.total||'-'}</td>
+      <td class="${p.assists===0?'z':''}">${p.assists||'-'}</td>
+    </tr>`;
+  }).join('');
 }
 
+// ── XML builders ──────────────────────────────────────────────────────────────
+// Xpression: flat DataPool key=value
+// Structure:
+//   Match/game state fields
+//   HOME_COURT_Z1_* through HOME_COURT_Z6_* — exactly who is in each zone RIGHT NOW
+//   HOME_P1_* through HOME_Pn_* — all players sorted: on-court first, then bench
+//   AWAY_* same pattern
 function buildXpression(d){
-  const L=[];const a=(id,v)=>L.push(`  <Data id="${id}">${esc(v)}</Data>`);
-  a('MATCH_ID',d.matchId);a('TIMESTAMP',d.timestamp);a('CURRENT_SET',d.curSet);
-  a('SERVE_TEAM',d.serve);a('SERVING_PLAYER',d.servingNum);
+  const L=[];
+  const a=(id,v)=>L.push(`  <Data id="${id}">${esc(v)}</Data>`);
+
+  // Game state
+  a('MATCH_ID',d.matchId);a('TIMESTAMP',d.timestamp);
+  a('HOME_TEAM_NAME',d.homeTeam);a('AWAY_TEAM_NAME',d.awayTeam);
+  a('CURRENT_SET',d.curSet);
   a('HOME_SET_WINS',d.wonHome);a('AWAY_SET_WINS',d.wonAway);
+  a('SERVE_TEAM',d.serve);a('SERVING_PLAYER_JERSEY',d.servingNum);
   a('HOME_TIMEOUTS_LEFT',d.timeouts[0]);a('AWAY_TIMEOUTS_LEFT',d.timeouts[1]);
   a('HOME_SUBS_LEFT',d.subs[0]);a('AWAY_SUBS_LEFT',d.subs[1]);
   a('HOME_SET_BALLS',d.setBalls[0]);a('AWAY_SET_BALLS',d.setBalls[1]);
   a('HOME_MATCH_BALLS',d.matchBalls[0]);a('AWAY_MATCH_BALLS',d.matchBalls[1]);
-  a('HOME_LIBERO',d.liberoHome);a('AWAY_LIBERO',d.liberoAway);
+  a('HOME_LIBERO_JERSEY',d.liberoHome);a('AWAY_LIBERO_JERSEY',d.liberoAway);
+  if(d.timer){a('TIMER_TYPE',d.timer.timer_type);a('TIMER_DURATION',d.timer.duration);}
   d.sets.forEach((s,i)=>{a(`SET${i+1}_HOME`,s.home);a(`SET${i+1}_AWAY`,s.away);});
-  const aT=(pfx,nm,pl,wins,ts)=>{
-    a(`${pfx}_TEAM_NAME`,nm);a(`${pfx}_SET_WINS`,wins);
-    a(`${pfx}_TEAM_KILLS`,ts.attack.kills);a(`${pfx}_TEAM_ACES`,ts.serve.aces);
-    a(`${pfx}_TEAM_BLOCKS`,ts.block.points);a(`${pfx}_TEAM_DIGS`,ts.digs.total);
-    pl.forEach((p,i)=>{const n=i+1;
-      a(`${pfx}_P${n}_JERSEY`,p.jersey);a(`${pfx}_P${n}_NAME`,p.name);a(`${pfx}_P${n}_SHIRT_NAME`,p.shirt_name);
-      a(`${pfx}_P${n}_LIBERO`,p.libero?'1':'0');a(`${pfx}_P${n}_SP`,p.sets_played);
-      a(`${pfx}_P${n}_PTS`,p.points.total);a(`${pfx}_P${n}_PTS_SO`,p.points.side_out);a(`${pfx}_P${n}_PTS_BP`,p.points.break_point);
-      a(`${pfx}_P${n}_ACES`,p.serve.aces);a(`${pfx}_P${n}_SERVE_ERR`,p.serve.errors);
-      a(`${pfx}_P${n}_REC_TOT`,p.reception.total);a(`${pfx}_P${n}_REC_POS_PCT`,pct(p.reception.pos_pct));a(`${pfx}_P${n}_REC_PERF_PCT`,pct(p.reception.perf_pct));
-      a(`${pfx}_P${n}_ATK_TOT`,p.attack.total);a(`${pfx}_P${n}_KILLS`,p.attack.kills);a(`${pfx}_P${n}_ATK_ERR`,p.attack.errors);
-      a(`${pfx}_P${n}_ATK_EFF`,p.attack.pct);a(`${pfx}_P${n}_BLK_PTS`,p.block.points);
-      a(`${pfx}_P${n}_DIGS`,p.digs.total);a(`${pfx}_P${n}_ASSISTS`,p.assists);
+
+  L.push('');
+  L.push('  <!-- ON-COURT ZONES: bind these directly to scoreboard templates -->');
+  L.push('  <!-- Zone 1=right-back  Zone 2=right-front  Zone 3=middle-front -->');
+  L.push('  <!-- Zone 4=left-front  Zone 5=left-back    Zone 6=middle-back  -->');
+
+  // Per-team zone slots (the primary binding point for scoreboards)
+  const addZones=(pfx,onCourt,isServTeam,servNum)=>{
+    for(let z=1;z<=6;z++){
+      const p=onCourt[z-1];
+      const pf=`${pfx}_COURT_Z${z}`;
+      a(`${pf}_JERSEY`,p?.jersey||'');
+      a(`${pf}_NAME`,p?.name||'');
+      a(`${pf}_SHIRT_NAME`,p?.shirt_name||'');
+      a(`${pf}_LIBERO`,p?.isLibero?'1':'0');
+      a(`${pf}_SERVING`,(isServTeam&&p&&String(p.jersey)===String(servNum))?'1':'0');
+      a(`${pf}_PTS`,p?String(p.points.total):'');
+      a(`${pf}_KILLS`,p?String(p.attack.kills):'');
+      a(`${pf}_ACES`,p?String(p.serve.aces):'');
+      a(`${pf}_BLK_PTS`,p?String(p.block.points):'');
+      a(`${pf}_DIGS`,p?String(p.digs.total):'');
+      a(`${pf}_REC_POS_PCT`,p?pctFmt(p.reception.pos_pct):'');
+      a(`${pf}_REC_PERF_PCT`,p?pctFmt(p.reception.perf_pct):'');
+      a(`${pf}_ATK_EFF`,p?(p.attack.pct?(parseFloat(p.attack.pct)*100).toFixed(1)+'%':''):'');
+    }
+  };
+  L.push('');L.push('  <!-- HOME COURT ZONES -->');
+  addZones('HOME',d.homeOnCourt,d.serve==='home',d.servingNum);
+  L.push('');L.push('  <!-- AWAY COURT ZONES -->');
+  addZones('AWAY',d.awayOnCourt,d.serve==='away',d.servingNum);
+
+  L.push('');
+  L.push('  <!-- ALL PLAYERS: on-court first (P1=Z1 through P6=Z6), then bench -->');
+
+  // All players: on-court (sorted by zone) then bench
+  const addAllPlayers=(pfx,players,isServTeam,servNum)=>{
+    const sorted=[...players].sort((a,b)=>{
+      if(a.onCourt&&!b.onCourt)return -1;if(!a.onCourt&&b.onCourt)return 1;
+      if(a.onCourt&&b.onCourt)return a.courtZone-b.courtZone;return 0;
+    });
+    sorted.forEach((p,i)=>{
+      const n=i+1,pf=`${pfx}_P${n}`;
+      const isServ=isServTeam&&String(p.jersey)===String(servNum);
+      a(`${pf}_JERSEY`,p.jersey);a(`${pf}_NAME`,p.name);a(`${pf}_SHIRT_NAME`,p.shirt_name);
+      a(`${pf}_ON_COURT`,p.onCourt?'1':'0');
+      a(`${pf}_COURT_ZONE`,p.onCourt?String(p.courtZone):'0');
+      a(`${pf}_LIBERO`,p.isLibero?'1':'0');
+      a(`${pf}_SERVING`,isServ?'1':'0');
+      a(`${pf}_SP`,p.sets_played);
+      a(`${pf}_PTS`,p.points.total);a(`${pf}_PTS_SO`,p.points.side_out);a(`${pf}_PTS_BP`,p.points.break_point);
+      a(`${pf}_ACES`,p.serve.aces);a(`${pf}_SERVE_ERR`,p.serve.errors);
+      a(`${pf}_REC_TOT`,p.reception.total);a(`${pf}_REC_POS_PCT`,pctFmt(p.reception.pos_pct));a(`${pf}_REC_PERF_PCT`,pctFmt(p.reception.perf_pct));
+      a(`${pf}_ATK_TOT`,p.attack.total);a(`${pf}_KILLS`,p.attack.kills);a(`${pf}_ATK_ERR`,p.attack.errors);
+      a(`${pf}_ATK_EFF`,p.attack.pct?(parseFloat(p.attack.pct)*100).toFixed(1)+'%':'');
+      a(`${pf}_BLK_PTS`,p.block.points);a(`${pf}_DIGS`,p.digs.total);a(`${pf}_ASSISTS`,p.assists);
     });
   };
-  aT('HOME',d.homeTeam,d.homePlayers,d.wonHome,d.homeTeamStats);
-  aT('AWAY',d.awayTeam,d.awayPlayers,d.wonAway,d.awayTeamStats);
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<!-- Ross Xpression DataPool | MLV | Match ${esc(d.matchId)} | ${d.timestamp} -->\n<DataPool>\n${L.join('\n')}\n</DataPool>`;
+  L.push('');L.push('  <!-- HOME PLAYERS (P1-P6 on court, remaining on bench) -->');
+  addAllPlayers('HOME',d.homePlayers,d.serve==='home',d.servingNum);
+  L.push('');L.push('  <!-- AWAY PLAYERS (P1-P6 on court, remaining on bench) -->');
+  addAllPlayers('AWAY',d.awayPlayers,d.serve==='away',d.servingNum);
+
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<!-- Ross Xpression DataPool | MLV Live Stats | Match ${esc(d.matchId)} | ${d.timestamp} -->\n<!-- HOME_COURT_Z1 through Z6 = current on-court players by rotation zone -->\n<!-- HOME_P1 through P6 = on-court players; P7+ = bench -->\n<DataPool>\n${L.join('\n')}\n</DataPool>`;
 }
 
+// Daktronics: hierarchical RTD
 function buildDaktronics(d){
   const L=[];
   L.push(`<?xml version="1.0" encoding="UTF-8"?>`);
-  L.push(`<!-- Daktronics RTD | MLV | Match ${esc(d.matchId)} | ${d.timestamp} -->`);
+  L.push(`<!-- Daktronics RTD | MLV Live Stats | Match ${esc(d.matchId)} | ${d.timestamp} -->`);
+  L.push(`<!-- CourtZone 1-6 nodes = current rotation. onCourt="1" in Players section -->`);
   L.push(`<RTD sport="Volleyball" version="2.0">`);
   L.push(`  <Game id="${esc(d.matchId)}" timestamp="${d.timestamp}">`);
   L.push(`    <State>`);
-  L.push(`      <CurrentSet>${d.curSet}</CurrentSet><Serve>${esc(d.serve)}</Serve><ServingPlayer>${esc(d.servingNum)}</ServingPlayer>`);
+  L.push(`      <CurrentSet>${d.curSet}</CurrentSet>`);
+  L.push(`      <Serve team="${esc(d.serve)}" playerJersey="${esc(d.servingNum)}" />`);
   L.push(`      <SetBalls home="${d.setBalls[0]}" away="${d.setBalls[1]}" />`);
   L.push(`      <MatchBalls home="${d.matchBalls[0]}" away="${d.matchBalls[1]}" />`);
   L.push(`      <Timeouts home="${d.timeouts[0]}" away="${d.timeouts[1]}" />`);
@@ -389,27 +642,70 @@ function buildDaktronics(d){
   L.push(`    <Sets>`);
   d.sets.forEach((s,i)=>L.push(`      <Set num="${i+1}" home="${s.home}" away="${s.away}" />`));
   L.push(`    </Sets>`);
-  const aT=(type,nm,wins,pl,ts,lu,lib)=>{
+
+  const addTeam=(type,nm,wins,players,onCourt,ts,libJersey,isServTeam,servNum)=>{
     L.push(`    <Team type="${type}">`);
-    L.push(`      <n>${esc(nm)}</n><SetWins>${wins}</SetWins>`);
-    L.push(`      <Lineup>${lu.join(',')}</Lineup><Libero>${esc(lib)}</Libero>`);
-    L.push(`      <TeamStats><Kills>${ts.attack.kills}</Kills><Aces>${ts.serve.aces}</Aces><Blocks>${ts.block.points}</Blocks><Digs>${ts.digs.total}</Digs><Errors>${ts.errors.total}</Errors></TeamStats>`);
+    L.push(`      <n>${esc(nm)}</n>`);
+    L.push(`      <SetWins>${wins}</SetWins>`);
+    L.push(`      <Libero jersey="${esc(libJersey)}" />`);
+    L.push(`      <TeamStats>`);
+    L.push(`        <Points>${ts.points.total}</Points><Kills>${ts.attack.kills}</Kills>`);
+    L.push(`        <Aces>${ts.serve.aces}</Aces><Blocks>${ts.block.points}</Blocks>`);
+    L.push(`        <Digs>${ts.digs.total}</Digs><Errors>${ts.errors.total}</Errors>`);
+    L.push(`      </TeamStats>`);
+
+    // Current court — zone-indexed, for direct scoreboard binding
+    L.push(`      <Court>`);
+    L.push(`        <!-- Zone 1=right-back  2=right-front  3=middle-front  4=left-front  5=left-back  6=middle-back -->`);
+    for(let z=1;z<=6;z++){
+      const p=onCourt[z-1];
+      const isServ=isServTeam&&p&&String(p.jersey)===String(servNum);
+      if(p){
+        L.push(`        <Zone num="${z}" jersey="${esc(p.jersey)}" libero="${p.isLibero?'1':'0'}" serving="${isServ?'1':'0'}">`);
+        L.push(`          <n>${esc(p.name)}</n>`);
+        L.push(`          <ShirtName>${esc(p.shirt_name)}</ShirtName>`);
+        L.push(`          <Points>${p.points.total}</Points>`);
+        L.push(`          <Kills>${p.attack.kills}</Kills>`);
+        L.push(`          <Aces>${p.serve.aces}</Aces>`);
+        L.push(`          <BlockPoints>${p.block.points}</BlockPoints>`);
+        L.push(`          <Digs>${p.digs.total}</Digs>`);
+        L.push(`          <RecPositivePct>${pctFmt(p.reception.pos_pct)}</RecPositivePct>`);
+        L.push(`          <RecPerfectPct>${pctFmt(p.reception.perf_pct)}</RecPerfectPct>`);
+        L.push(`          <AttackEff>${p.attack.pct?(parseFloat(p.attack.pct)*100).toFixed(1)+'%':'-'}</AttackEff>`);
+        L.push(`        </Zone>`);
+      }else{
+        L.push(`        <Zone num="${z}" jersey="" libero="0" serving="0" />`);
+      }
+    }
+    L.push(`      </Court>`);
+
+    // Full roster (on-court sorted first)
+    const sorted=[...players].sort((a,b)=>{
+      if(a.onCourt&&!b.onCourt)return -1;if(!a.onCourt&&b.onCourt)return 1;
+      if(a.onCourt&&b.onCourt)return a.courtZone-b.courtZone;return 0;
+    });
     L.push(`      <Players>`);
-    pl.forEach((p,i)=>{
-      L.push(`        <Player num="${i+1}" jersey="${esc(p.jersey)}" libero="${p.libero?'1':'0'}">`);
-      L.push(`          <n>${esc(p.name)}</n><ShirtName>${esc(p.shirt_name)}</ShirtName><SetsPlayed>${p.sets_played}</SetsPlayed>`);
+    sorted.forEach((p,i)=>{
+      const isServ=isServTeam&&String(p.jersey)===String(servNum);
+      L.push(`        <Player seq="${i+1}" jersey="${esc(p.jersey)}" onCourt="${p.onCourt?'1':'0'}" courtZone="${p.onCourt?p.courtZone:'0'}" libero="${p.isLibero?'1':'0'}" serving="${isServ?'1':'0'}">`);
+      L.push(`          <n>${esc(p.name)}</n><ShirtName>${esc(p.shirt_name)}</ShirtName>`);
+      L.push(`          <SetsPlayed>${p.sets_played}</SetsPlayed>`);
       L.push(`          <Points total="${p.points.total}" sideOut="${p.points.side_out}" breakPoint="${p.points.break_point}" />`);
       L.push(`          <Serve><Aces>${p.serve.aces}</Aces><Errors>${p.serve.errors}</Errors></Serve>`);
-      L.push(`          <Reception><Total>${p.reception.total}</Total><PositivePct>${pct(p.reception.pos_pct)}</PositivePct><PerfectPct>${pct(p.reception.perf_pct)}</PerfectPct></Reception>`);
-      L.push(`          <Attack><Total>${p.attack.total}</Total><Kills>${p.attack.kills}</Kills><Errors>${p.attack.errors}</Errors><Eff>${p.attack.pct}</Eff></Attack>`);
-      L.push(`          <Block><Points>${p.block.points}</Points></Block><Digs>${p.digs.total}</Digs><Assists>${p.assists}</Assists>`);
+      L.push(`          <Reception><Total>${p.reception.total}</Total><PositivePct>${pctFmt(p.reception.pos_pct)}</PositivePct><PerfectPct>${pctFmt(p.reception.perf_pct)}</PerfectPct></Reception>`);
+      L.push(`          <Attack><Total>${p.attack.total}</Total><Kills>${p.attack.kills}</Kills><Errors>${p.attack.errors}</Errors><Eff>${p.attack.pct?(parseFloat(p.attack.pct)*100).toFixed(1)+'%':'-'}</Eff></Attack>`);
+      L.push(`          <Block><Points>${p.block.points}</Points></Block>`);
+      L.push(`          <Digs>${p.digs.total}</Digs><Assists>${p.assists}</Assists>`);
       L.push(`        </Player>`);
     });
-    L.push(`      </Players></Team>`);
+    L.push(`      </Players>`);
+    L.push(`    </Team>`);
   };
-  aT('home',d.homeTeam,d.wonHome,d.homePlayers,d.homeTeamStats,d.lineupHome,d.liberoHome);
-  aT('away',d.awayTeam,d.wonAway,d.awayPlayers,d.awayTeamStats,d.lineupAway,d.liberoAway);
-  L.push(`  </Game></RTD>`);
+
+  addTeam('home',d.homeTeam,d.wonHome,d.homePlayers,d.homeOnCourt,d.homeTeamStats,d.liberoHome,d.serve==='home',d.servingNum);
+  addTeam('away',d.awayTeam,d.wonAway,d.awayPlayers,d.awayOnCourt,d.awayTeamStats,d.liberoAway,d.serve==='away',d.servingNum);
+  L.push(`  </Game>`);
+  L.push(`</RTD>`);
   return L.join('\n');
 }
 
@@ -419,81 +715,33 @@ function synHL(xml){
     .replace(/(\w[-\w]*)=(&quot;[^&]*&quot;)/g,'<span class="at">$1</span>=<span class="vl">$2</span>')
     .replace(/(&lt;!--[\s\S]*?--&gt;)/g,'<span class="cm">$1</span>');
 }
-
-function renderXml(){
-  if(!curData)return;
-  document.getElementById('xo').innerHTML=synHL(xmlTab==='xpression'?buildXpression(curData):buildDaktronics(curData));
-}
-
-function swTab(t){
-  xmlTab=t;
-  document.querySelectorAll('.xtab').forEach((el,i)=>el.classList.toggle('on',(i===0&&t==='xpression')||(i===1&&t==='daktronics')));
-  renderXml();
-}
-
-function toggleXml(){
-  const p=document.getElementById('xp');p.classList.toggle('open');
-  if(p.classList.contains('open'))renderXml();
-}
-
-function cpXml(){
-  if(!curData)return;
-  const x=xmlTab==='xpression'?buildXpression(curData):buildDaktronics(curData);
-  navigator.clipboard.writeText(x).then(()=>{
-    const b=document.querySelector('.xbtn');b.textContent='Copied!';setTimeout(()=>b.textContent='Copy',1500);
-  });
-}
-
-function dlXml(e){
-  e.preventDefault();if(!curData)return;
-  const x=xmlTab==='xpression'?buildXpression(curData):buildDaktronics(curData);
-  const fn=xmlTab==='xpression'?'xpression_stats.xml':'daktronics_rtd.xml';
-  const b=new Blob([x],{type:'application/xml'});
-  const u=URL.createObjectURL(b);
-  const a=document.createElement('a');a.href=u;a.download=fn;a.click();
-  URL.revokeObjectURL(u);
-}
+function renderXml(){if(!curData)return;document.getElementById('xo').innerHTML=synHL(xmlTab==='xpression'?buildXpression(curData):buildDaktronics(curData));}
+function swTab(t){xmlTab=t;document.querySelectorAll('.xtab').forEach((el,i)=>el.classList.toggle('on',(i===0&&t==='xpression')||(i===1&&t==='daktronics')));renderXml();}
+function toggleXml(){const p=document.getElementById('xp');p.classList.toggle('open');if(p.classList.contains('open'))renderXml();}
+function cpXml(){if(!curData)return;const x=xmlTab==='xpression'?buildXpression(curData):buildDaktronics(curData);navigator.clipboard.writeText(x).then(()=>{const b=document.querySelector('.xbtn');b.textContent='Copied!';setTimeout(()=>b.textContent='Copy',1500);});}
+function dlXml(e){e.preventDefault();if(!curData)return;const x=xmlTab==='xpression'?buildXpression(curData):buildDaktronics(curData);const fn=xmlTab==='xpression'?'xpression_stats.xml':'daktronics_rtd.xml';const b=new Blob([x],{type:'application/xml'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=fn;a.click();URL.revokeObjectURL(u);}
 
 function startPolling(){
-  const tok=document.getElementById('tok').value.trim();
-  const mid=getMid();
+  const tok=document.getElementById('tok').value.trim(),mid=getMid();
   if(!tok){alert('Enter your API token first.');return;}
   if(!mid){alert('Select a match first.');return;}
-  document.getElementById('btnS').disabled=true;
-  document.getElementById('btnP').disabled=false;
-  document.getElementById('btnX').disabled=false;
+  document.getElementById('btnS').disabled=true;document.getElementById('btnP').disabled=false;document.getElementById('btnX').disabled=false;
   const iv=parseInt(document.getElementById('iv').value)*1000;
-  fetchAndRender();
-  timer=setInterval(fetchAndRender,iv);
+  fetchAndRender();pollTimer=setInterval(fetchAndRender,iv);
 }
-
-function stopPolling(){
-  clearInterval(timer);timer=null;
-  document.getElementById('btnS').disabled=false;
-  document.getElementById('btnP').disabled=true;
-  setSt('idle','Stopped');
-}
-
-function setSt(state,txt){
-  document.getElementById('pill').className=`pill ${state}`;
-  document.getElementById('pt').textContent=txt;
-}
-
+function stopPolling(){clearInterval(pollTimer);pollTimer=null;document.getElementById('btnS').disabled=false;document.getElementById('btnP').disabled=true;setSt('idle','Stopped');}
+function setSt(state,txt){document.getElementById('pill').className=`pill ${state}`;document.getElementById('pt').textContent=txt;}
 function showErr(e){
   const p=document.getElementById('ep');p.classList.add('show');
-  document.getElementById('et').textContent='Connection Error';
-  document.getElementById('em').textContent=e.message;
+  document.getElementById('et').textContent='Connection Error';document.getElementById('em').textContent=e.message;
   let hint='';
-  if(e.message.includes('fetch')||e.message.includes('Failed')||e.message.includes('Network'))
-    hint='CORS blocked direct API AND proxy not running. Run proxy.js, or verify token/match ID.';
+  if(e.message.includes('fetch')||e.message.includes('Failed')||e.message.includes('Network'))hint='CORS blocked direct API AND proxy not running. Run proxy.js locally, or verify token/match ID.';
   else if(e.message.includes('401'))hint='Invalid token. Check with your VolleyStation admin.';
-  else if(e.message.includes('404'))hint='Match ID not found. Verify the ID from the dropdown.';
+  else if(e.message.includes('404'))hint='Match ID not found.';
   document.getElementById('eh').textContent=hint;
   document.getElementById('empty').style.display='none';
 }
-
 function hideErr(){document.getElementById('ep').classList.remove('show');}
-
 document.getElementById('tok').addEventListener('input',function(){sessionStorage.setItem('vs_tok',this.value);});
 const sv=sessionStorage.getItem('vs_tok');if(sv)document.getElementById('tok').value=sv;
 
