@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VS Live Stats — MLV Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & Variables ─────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #090c10;
+  --surface:   #0e1318;
+  --surface2:  #141b22;
+  --border:    #1e2a35;
+  --border2:   #243040;
+  --accent:    #00c8ff;
+  --accent2:   #ff4d6d;
+  --gold:      #f5c542;
+  --green:     #22d46b;
+  --muted:     #4a6070;
+  --text:      #c8dae8;
+  --text-dim:  #6a8090;
+  --text-bright: #eaf4fb;
+  --font-display: 'Barlow Condensed', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-display);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Scanline texture overlay ───────────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 999; pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px
+  );
+}
+
+/* ── Layout ─────────────────────────────────────────────────────────── */
+.app { display: grid; grid-template-rows: auto auto 1fr; min-height: 100vh; }
+
+/* ── Header ─────────────────────────────────────────────────────────── */
+header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex; align-items: center; gap: 20px;
+  height: 58px;
+  position: sticky; top: 0; z-index: 100;
+}
+.logo {
+  font-size: 20px; font-weight: 900; letter-spacing: 0.08em;
+  color: var(--text-bright); text-transform: uppercase;
+}
+.logo span { color: var(--accent); }
+.status-pill {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 12px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  border: 1px solid var(--border2);
+  font-family: var(--font-mono);
+}
+.status-pill.idle    { color: var(--muted); }
+.status-pill.live    { color: var(--green); border-color: var(--green); }
+.status-pill.error   { color: var(--accent2); border-color: var(--accent2); }
+.status-pill.loading { color: var(--gold); border-color: var(--gold); }
+.status-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: currentColor;
+}
+.status-pill.live .status-dot { animation: blink 1s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.last-update {
+  font-family: var(--font-mono); font-size: 11px; color: var(--muted);
+}
+
+/* ── Config bar ─────────────────────────────────────────────────────── */
+.config-bar {
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
+}
+.config-bar label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+  color: var(--muted); text-transform: uppercase;
+}
+.config-bar input, .config-bar select {
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  color: var(--text-bright);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 7px 11px;
+  border-radius: 4px;
+  outline: none;
+  transition: border-color .15s;
+}
+.config-bar input:focus, .config-bar select:focus {
+  border-color: var(--accent);
+}
+.config-bar input[type="password"] { width: 220px; letter-spacing: 0.15em; }
+.config-bar input[type="text"]     { width: 130px; }
+.config-bar select                 { width: 90px; }
+
+.btn {
+  padding: 8px 20px;
+  border: none; border-radius: 4px; cursor: pointer;
+  font-family: var(--font-display); font-size: 13px;
+  font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  transition: all .15s;
+}
+.btn-start {
+  background: var(--accent); color: var(--bg);
+}
+.btn-start:hover { background: #33d5ff; }
+.btn-stop {
+  background: transparent; color: var(--accent2);
+  border: 1px solid var(--accent2);
+}
+.btn-stop:hover { background: var(--accent2); color: white; }
+.btn-xml {
+  background: transparent; color: var(--gold);
+  border: 1px solid var(--gold);
+}
+.btn-xml:hover { background: var(--gold); color: var(--bg); }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+
+.divider { width: 1px; height: 28px; background: var(--border2); }
+
+/* ── CORS warning banner ─────────────────────────────────────────────── */
+.cors-banner {
+  background: #1a1200;
+  border-bottom: 1px solid #3a2800;
+  padding: 8px 24px;
+  display: flex; align-items: center; gap: 10px;
+  font-size: 12px; color: var(--gold);
+}
+.cors-banner code {
+  background: #2a1e00; padding: 2px 8px; border-radius: 3px;
+  font-family: var(--font-mono); font-size: 11px;
+}
+.cors-banner a { color: var(--accent); }
+
+/* ── Main dashboard grid ─────────────────────────────────────────────── */
+.dashboard {
+  padding: 20px 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto 1fr;
+  gap: 16px;
+}
+
+/* ── Score header ────────────────────────────────────────────────────── */
+.score-header {
+  grid-column: 1 / -1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 20px 28px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.score-team {
+  display: flex; flex-direction: column; gap: 4px;
+  min-width: 200px;
+}
+.score-team-name {
+  font-size: 28px; font-weight: 900; letter-spacing: 0.05em;
+  color: var(--text-bright); text-transform: uppercase;
+  line-height: 1;
+}
+.score-team-name.away { text-align: right; }
+.score-meta {
+  font-size: 12px; font-weight: 600; color: var(--muted);
+  letter-spacing: 0.1em; text-transform: uppercase;
+}
+.score-meta.away { text-align: right; }
+
+.score-center {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.score-sets {
+  display: flex; align-items: center; gap: 16px;
+}
+.score-number {
+  font-size: 64px; font-weight: 900; line-height: 1;
+  font-family: var(--font-mono);
+  color: var(--text-bright);
+}
+.score-number.leading { color: var(--accent); }
+.score-dash { font-size: 32px; color: var(--muted); font-weight: 300; }
+
+.set-scores {
+  display: flex; gap: 6px;
+}
+.set-chip {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 3px 8px;
+  font-family: var(--font-mono); font-size: 12px;
+  color: var(--text-dim);
+  display: flex; gap: 4px;
+}
+.set-chip .w { color: var(--green); font-weight: 700; }
+.set-chip .active { color: var(--gold); }
+
+.live-indicators {
+  display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+}
+.indicator {
+  padding: 3px 10px;
+  border-radius: 3px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid;
+}
+.ind-serve-home { color: var(--accent); border-color: var(--accent); background: rgba(0,200,255,0.07); }
+.ind-serve-away { color: var(--accent2); border-color: var(--accent2); background: rgba(255,77,109,0.07); }
+.ind-timeout    { color: var(--gold); border-color: var(--gold); background: rgba(245,197,66,0.07); }
+.ind-setball    { color: var(--green); border-color: var(--green); background: rgba(34,212,107,0.07); }
+.ind-matchball  { color: #ff9f00; border-color: #ff9f00; background: rgba(255,159,0,0.1); }
+.ind-timer      { color: #ff9f00; border-color: #ff9f00; }
+
+/* ── Player stat tables ──────────────────────────────────────────────── */
+.team-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.team-panel-header {
+  padding: 12px 16px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.team-panel-name {
+  font-size: 16px; font-weight: 900; letter-spacing: 0.08em;
+  color: var(--text-bright); text-transform: uppercase;
+}
+.team-panel-side {
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  letter-spacing: 0.12em; text-transform: uppercase;
+}
+.team-agg {
+  display: flex; gap: 16px;
+}
+.team-agg-stat {
+  display: flex; flex-direction: column; align-items: center;
+  font-family: var(--font-mono);
+}
+.team-agg-val { font-size: 18px; font-weight: 700; color: var(--accent); line-height: 1; }
+.team-agg-lbl { font-size: 9px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; }
+
+.stats-table-wrap { overflow-x: auto; }
+table {
+  width: 100%; border-collapse: collapse;
+  font-size: 12px;
+}
+thead th {
+  padding: 6px 10px;
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  text-align: right; white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+thead th:first-child, thead th:nth-child(2) { text-align: left; }
+tbody tr { border-bottom: 1px solid rgba(30,42,53,0.6); transition: background .1s; }
+tbody tr:hover { background: var(--surface2); }
+tbody tr.libero-row { opacity: 0.7; }
+tbody tr.captain-row td:nth-child(2)::after {
+  content: ' ©'; color: var(--gold); font-size: 10px;
+}
+td {
+  padding: 7px 10px;
+  text-align: right; white-space: nowrap;
+  font-family: var(--font-mono); font-size: 12px;
+  color: var(--text);
+}
+td:first-child {
+  text-align: left; font-weight: 700; color: var(--muted);
+  width: 32px;
+}
+td:nth-child(2) {
+  text-align: left; color: var(--text-bright);
+  font-family: var(--font-display); font-size: 13px; font-weight: 600;
+  min-width: 140px;
+}
+td.highlight { color: var(--accent); font-weight: 700; }
+td.zero      { color: var(--muted); }
+td.eff-good  { color: var(--green); }
+td.eff-bad   { color: var(--accent2); }
+
+/* ── State/sidebar row ───────────────────────────────────────────────── */
+.sidebar-row {
+  grid-column: 1 / -1;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 16px;
+}
+.stat-card-label {
+  font-size: 10px; font-weight: 700; color: var(--muted);
+  letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 10px;
+}
+.stat-card-content {
+  display: flex; justify-content: space-between; align-items: flex-end;
+}
+.stat-val {
+  font-family: var(--font-mono); font-size: 22px; font-weight: 700;
+  color: var(--text-bright);
+}
+.stat-val.home { color: var(--accent); }
+.stat-val.away { color: var(--accent2); }
+.stat-sep { font-size: 16px; color: var(--muted); }
+.stat-sub {
+  font-size: 11px; color: var(--muted); margin-top: 4px;
+  font-family: var(--font-mono);
+}
+
+/* ── XML output panel ────────────────────────────────────────────────── */
+.xml-panel {
+  grid-column: 1 / -1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  display: none;
+}
+.xml-panel.open { display: block; }
+.xml-panel-header {
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+.xml-panel-title { font-size: 13px; font-weight: 700; color: var(--gold); }
+.xml-tabs {
+  display: flex; gap: 4px; margin-left: 16px;
+}
+.xml-tab {
+  padding: 4px 12px; border-radius: 3px; cursor: pointer;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+  background: transparent; border: 1px solid var(--border2);
+  color: var(--muted); transition: all .1s;
+}
+.xml-tab.active { background: var(--gold); color: var(--bg); border-color: var(--gold); }
+.xml-copy-btn {
+  margin-left: auto; padding: 4px 12px; cursor: pointer;
+  font-size: 11px; font-weight: 700;
+  background: transparent; border: 1px solid var(--border2);
+  color: var(--text); border-radius: 3px; font-family: var(--font-display);
+}
+.xml-copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+.xml-download-btn {
+  padding: 4px 12px; cursor: pointer;
+  font-size: 11px; font-weight: 700;
+  background: transparent; border: 1px solid var(--border2);
+  color: var(--text); border-radius: 3px; font-family: var(--font-display);
+  text-decoration: none; display: inline-block;
+}
+.xml-download-btn:hover { border-color: var(--gold); color: var(--gold); }
+pre.xml-output {
+  background: var(--bg);
+  padding: 14px 16px;
+  font-family: var(--font-mono); font-size: 11px;
+  color: #7ec8e3;
+  overflow: auto;
+  max-height: 400px;
+  line-height: 1.6;
+}
+pre.xml-output .tag   { color: #569cd6; }
+pre.xml-output .attr  { color: #9cdcfe; }
+pre.xml-output .val   { color: #ce9178; }
+pre.xml-output .cmt   { color: #4a6070; }
+
+/* ── Empty state ─────────────────────────────────────────────────────── */
+.empty-state {
+  grid-column: 1 / -1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 80px 24px;
+  gap: 16px;
+  color: var(--muted);
+  text-align: center;
+}
+.empty-icon { font-size: 64px; opacity: 0.3; }
+.empty-title { font-size: 22px; font-weight: 700; letter-spacing: 0.05em; }
+.empty-sub   { font-size: 14px; max-width: 400px; line-height: 1.6; }
+
+/* ── Error state ─────────────────────────────────────────────────────── */
+.error-panel {
+  grid-column: 1 / -1;
+  background: rgba(255,77,109,0.06);
+  border: 1px solid rgba(255,77,109,0.3);
+  border-radius: 6px;
+  padding: 16px 20px;
+  display: none;
+}
+.error-panel.show { display: block; }
+.error-title { font-size: 14px; font-weight: 700; color: var(--accent2); margin-bottom: 6px; }
+.error-msg   { font-size: 13px; color: var(--text-dim); font-family: var(--font-mono); }
+.error-hint  { font-size: 12px; color: var(--muted); margin-top: 8px; }
+.error-hint code { background: var(--surface2); padding: 2px 6px; border-radius: 3px; }
+
+/* ── Proxy note ──────────────────────────────────────────────────────── */
+.proxy-info {
+  grid-column: 1 / -1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 20px 24px;
+  display: none;
+}
+.proxy-info.show { display: block; }
+.proxy-info h3 { font-size: 15px; font-weight: 700; color: var(--gold); margin-bottom: 12px; }
+.proxy-info p  { font-size: 13px; color: var(--text-dim); line-height: 1.7; margin-bottom: 8px; }
+.proxy-info pre {
+  background: var(--bg); border: 1px solid var(--border2);
+  border-radius: 4px; padding: 12px 14px;
+  font-family: var(--font-mono); font-size: 12px; color: var(--accent);
+  overflow-x: auto; margin: 10px 0;
+}
+.proxy-info a { color: var(--accent); }
+
+/* ── Animations ──────────────────────────────────────────────────────── */
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+.fade-in { animation: fadeIn .3s ease forwards; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ── Header ───────────────────────────────────────────────────────── -->
+<header>
+  <div class="logo">VS<span>Live</span> Stats</div>
+  <div id="statusPill" class="status-pill idle">
+    <div class="status-dot"></div>
+    <span id="statusText">Idle</span>
+  </div>
+  <div class="header-right">
+    <div id="lastUpdate" class="last-update"></div>
+  </div>
+</header>
+
+<!-- ── Config bar ────────────────────────────────────────────────────── -->
+<div class="config-bar">
+  <label>Proxy URL</label>
+  <input type="text" id="proxyUrl" value="http://localhost:3030" style="width:170px" title="Local proxy URL">
+
+  <div class="divider"></div>
+
+  <label>API Token</label>
+  <input type="password" id="apiToken" placeholder="Your VolleyStation token" autocomplete="off">
+
+  <div class="divider"></div>
+
+  <label>Match ID</label>
+  <input type="text" id="matchId" placeholder="e.g. 2161022">
+
+  <div class="divider"></div>
+
+  <label>Interval</label>
+  <select id="interval">
+    <option value="10">10s</option>
+    <option value="20">20s</option>
+    <option value="30" selected>30s</option>
+    <option value="60">60s</option>
+  </select>
+
+  <div class="divider"></div>
+
+  <button class="btn btn-start" id="btnStart" onclick="startPolling()">▶ Start</button>
+  <button class="btn btn-stop"  id="btnStop"  onclick="stopPolling()" disabled>■ Stop</button>
+
+  <div class="divider"></div>
+
+  <button class="btn btn-xml" id="btnXml" onclick="toggleXml()" disabled>⬇ XML</button>
+  <button class="btn btn-xml" id="btnLookup" onclick="showLookup()" style="border-color:var(--accent);color:var(--accent)">⌕ Lookup</button>
+</div>
+
+<!-- CORS warning -->
+<div class="cors-banner" id="corsBanner">
+  ⚠ Browser security (CORS) blocks direct API calls. Run the included proxy:
+  <code>node proxy.js</code> — then click Start. &nbsp;
+  <a href="#proxySetup" onclick="document.getElementById('proxySetupPanel').classList.toggle('show')">Setup guide ▾</a>
+</div>
+
+<!-- ── Dashboard ─────────────────────────────────────────────────────── -->
+<div class="dashboard" id="dashboard">
+
+  <!-- Proxy setup panel -->
+  <div class="proxy-info" id="proxySetupPanel">
+    <h3>⚡ Proxy Setup (one-time, 30 seconds)</h3>
+    <p>Browsers block direct API calls to external servers (CORS policy). A tiny local proxy script forwards your requests. It runs on your machine — your token never leaves your network.</p>
+    <p><strong>1. Make sure Node.js is installed</strong> (nodejs.org)</p>
+    <p><strong>2. Save <code>proxy.js</code></strong> from this repo to any folder and run:</p>
+    <pre>node proxy.js</pre>
+    <p><strong>3. Leave that terminal open</strong> while using the dashboard. The proxy runs at <code>http://localhost:3030</code>.</p>
+    <p>That's it — no npm install needed. The proxy is a single file, ~40 lines.</p>
+  </div>
+
+  <!-- Error panel -->
+  <div class="error-panel" id="errorPanel">
+    <div class="error-title" id="errorTitle">Error</div>
+    <div class="error-msg"   id="errorMsg"></div>
+    <div class="error-hint"  id="errorHint"></div>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" id="emptyState">
+    <div class="empty-icon">🏐</div>
+    <div class="empty-title">No match loaded</div>
+    <div class="empty-sub">Enter your API token and Match ID above, then press Start. Stats will update live throughout the game.</div>
+  </div>
+
+  <!-- ── Score header (hidden until data) ── -->
+  <div class="score-header fade-in" id="scoreHeader" style="display:none">
+    <div class="score-team">
+      <div class="score-team-name" id="homeTeamName">—</div>
+      <div class="score-meta" id="homeMetaLeft"></div>
+    </div>
+    <div class="score-center">
+      <div class="score-sets">
+        <div class="score-number" id="homeSetWins">0</div>
+        <div class="score-dash">–</div>
+        <div class="score-number" id="awaySetWins">0</div>
+      </div>
+      <div class="set-scores" id="setScores"></div>
+      <div class="live-indicators" id="liveIndicators"></div>
+    </div>
+    <div class="score-team" style="text-align:right">
+      <div class="score-team-name away" id="awayTeamName">—</div>
+      <div class="score-meta away" id="awayMetaRight"></div>
+    </div>
+  </div>
+
+  <!-- ── Sidebar cards row (hidden until data) ── -->
+  <div class="sidebar-row fade-in" id="sidebarRow" style="display:none">
+    <div class="stat-card">
+      <div class="stat-card-label">Timeouts Remaining</div>
+      <div class="stat-card-content">
+        <div><div class="stat-val home" id="homeTimeouts">—</div><div class="stat-sub">Home</div></div>
+        <div class="stat-sep">|</div>
+        <div><div class="stat-val away" id="awayTimeouts">—</div><div class="stat-sub">Away</div></div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Substitutions Left</div>
+      <div class="stat-card-content">
+        <div><div class="stat-val home" id="homeSubs">—</div><div class="stat-sub">Home</div></div>
+        <div class="stat-sep">|</div>
+        <div><div class="stat-val away" id="awaySubs">—</div><div class="stat-sub">Away</div></div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Current Lineup (Home)</div>
+      <div class="stat-card-content" style="align-items:center">
+        <div class="stat-val" id="homeLineup" style="font-size:14px;letter-spacing:0.1em">—</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Current Lineup (Away)</div>
+      <div class="stat-card-content" style="align-items:center">
+        <div class="stat-val" id="awayLineup" style="font-size:14px;letter-spacing:0.1em">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Team panels (hidden until data) ── -->
+  <div class="team-panel fade-in" id="homePanel" style="display:none">
+    <div class="team-panel-header">
+      <div>
+        <div class="team-panel-name" id="homePanelName">Home</div>
+        <div class="team-panel-side">Home Team</div>
+      </div>
+      <div class="team-agg" id="homeTeamAgg"></div>
+    </div>
+    <div class="stats-table-wrap">
+      <table id="homeTable">
+        <thead>
+          <tr>
+            <th>#</th><th>Player</th><th>SP</th><th>PTS</th>
+            <th>ACE</th><th>SrvE</th>
+            <th>RecT</th><th>Pos%</th><th>Prf%</th>
+            <th>AtkT</th><th>K</th><th>AtkE</th><th>Eff</th>
+            <th>BlkP</th><th>Dig</th><th>Ast</th>
+          </tr>
+        </thead>
+        <tbody id="homeBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="team-panel fade-in" id="awayPanel" style="display:none">
+    <div class="team-panel-header">
+      <div>
+        <div class="team-panel-name" id="awayPanelName">Away</div>
+        <div class="team-panel-side">Away Team</div>
+      </div>
+      <div class="team-agg" id="awayTeamAgg"></div>
+    </div>
+    <div class="stats-table-wrap">
+      <table id="awayTable">
+        <thead>
+          <tr>
+            <th>#</th><th>Player</th><th>SP</th><th>PTS</th>
+            <th>ACE</th><th>SrvE</th>
+            <th>RecT</th><th>Pos%</th><th>Prf%</th>
+            <th>AtkT</th><th>K</th><th>AtkE</th><th>Eff</th>
+            <th>BlkP</th><th>Dig</th><th>Ast</th>
+          </tr>
+        </thead>
+        <tbody id="awayBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── XML output panel ── -->
+  <div class="xml-panel" id="xmlPanel">
+    <div class="xml-panel-header">
+      <div class="xml-panel-title">📄 XML Output</div>
+      <div class="xml-tabs">
+        <button class="xml-tab active" onclick="switchTab('xpression')">Xpression</button>
+        <button class="xml-tab"        onclick="switchTab('daktronics')">Daktronics</button>
+      </div>
+      <button class="xml-copy-btn" onclick="copyXml()">Copy</button>
+      <a id="xmlDownload" class="xml-download-btn" href="#" onclick="downloadXml(event)">⬇ Download</a>
+    </div>
+    <pre id="xmlOutput" class="xml-output"></pre>
+  </div>
+
+</div><!-- /dashboard -->
+</div><!-- /app -->
+
+<!-- ── Lookup modal ───────────────────────────────────────────────────────── -->
+<div id="lookupModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:8px;width:600px;max-width:95vw;max-height:80vh;overflow:hidden;display:flex;flex-direction:column">
+    <div style="padding:16px 20px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:15px;font-weight:700;color:var(--text-bright)">Find Match ID</span>
+      <button onclick="closeLookup()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px">✕</button>
+    </div>
+    <div style="padding:16px 20px;display:flex;gap:10px;align-items:center;border-bottom:1px solid var(--border)">
+      <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">Championship ID</label>
+      <input type="text" id="lookupChampId" placeholder="e.g. 56"
+        style="background:var(--bg);border:1px solid var(--border2);color:var(--text-bright);font-family:var(--font-mono);font-size:13px;padding:7px 11px;border-radius:4px;outline:none;width:120px">
+      <button class="btn btn-start" style="padding:7px 16px" onclick="runLookup()">Search</button>
+    </div>
+    <div id="lookupResults" style="padding:16px 20px;overflow-y:auto;font-size:13px;min-height:100px;color:var(--muted)">
+      Enter a Championship ID and click Search.
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── State ────────────────────────────────────────────────────────────────────
+let pollingTimer = null;
+let currentData  = null;
+let activeXmlTab = 'xpression';
+
+// ─── Skill helpers (mirrors scraper.js logic) ─────────────────────────────────
+function skill(skills, code, effect) {
+  return Number((skills?.[code]?.[effect]) ?? 0);
+}
+function skillSum(skills, code) {
+  const s = skills?.[code] || {};
+  return Object.values(s).reduce((a,b) => a + (Number(b)||0), 0);
+}
+function pctFmt(val) {
+  const n = parseFloat(val);
+  if (isNaN(n) || !val || val === "0") return '-';
+  return (n * 100).toFixed(1) + '%';
+}
+function effClass(val) {
+  const n = parseFloat(val);
+  if (isNaN(n)) return '';
+  if (n >= 0.35) return 'eff-good';
+  if (n < 0)    return 'eff-bad';
+  return '';
+}
+function numClass(n) { return Number(n) === 0 ? 'zero' : 'highlight'; }
+
+function normalizePlayer(raw) {
+  const t  = raw.total || {};
+  const sk = t.skills || {};
+  const pts = t.points || {};
+  const pct = t.percentages || {};
+  const eff = t.efficiencies || {};
+  const err = t.errors || {};
+  const name = [raw.name, raw.surname].filter(Boolean).join(' ') || raw.shirtName || 'Unknown';
+  return {
+    jersey:    raw.shirtNumber ?? '',
+    name, shirt_name: raw.shirtName || name,
+    libero:    raw.libero || false,
+    captain:   raw.captain || false,
+    positions: raw.positions || [],
+    sets_played: String((raw.positions||[]).filter(p=>p!==null).length),
+    points:    { total: pts.total??0, side_out: pts.sideOut??0, break_point: pts.breakPoint??0 },
+    errors:    { total: err.total??0 },
+    serve:     { total: skillSum(sk,'S'), aces: skill(sk,'S','#'), errors: skill(sk,'S','='), efficiency: eff.S??'' },
+    reception: {
+      total: skillSum(sk,'R'), errors: skill(sk,'R','='),
+      perfect: skill(sk,'R','#'), positive: skill(sk,'R','#') + skill(sk,'R','+'),
+      positive_pct: pct.R?.['#+'] ?? '', perfect_pct: pct.R?.['#'] ?? ''
+    },
+    attack:    { total: skillSum(sk,'A'), kills: skill(sk,'A','#'), errors: skill(sk,'A','='), blocked: skill(sk,'A','/'), pct: eff.A??'', kill_pct: pct.A?.['#']??'' },
+    block:     { points: skill(sk,'B','#'), errors: skill(sk,'B','=') },
+    digs:      { total: skill(sk,'D','#') },
+    assists:   t.assists ?? 0,
+  };
+}
+
+// ─── Fetch via local proxy ────────────────────────────────────────────────────
+async function vsGet(endpoint) {
+  const proxy  = document.getElementById('proxyUrl').value.replace(/\/$/, '');
+  const token  = document.getElementById('apiToken').value.trim();
+  const url    = `${proxy}/vs?path=${encodeURIComponent(endpoint)}&token=${encodeURIComponent(token)}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    const txt = await res.text().catch(()=>'');
+    throw new Error(`HTTP ${res.status}: ${txt.slice(0,200)}`);
+  }
+  return res.json();
+}
+
+// ─── Core fetch ───────────────────────────────────────────────────────────────
+async function fetchAndRender() {
+  const matchId = document.getElementById('matchId').value.trim();
+  if (!matchId) return;
+
+  try {
+    setStatus('loading', 'Fetching…');
+
+    const [statsData, matchData] = await Promise.all([
+      vsGet(`match-stats-summary/${matchId}`),
+      vsGet(`Matches/${matchId}?show_timer=1`),
+    ]);
+
+    currentData = buildData(statsData, matchData, matchId);
+    renderDashboard(currentData);
+    renderXml();
+    setStatus('live', 'Live');
+    document.getElementById('lastUpdate').textContent =
+      'Updated ' + new Date().toLocaleTimeString();
+    hideError();
+  } catch(e) {
+    setStatus('error', 'Error');
+    showError(e);
+  }
+}
+
+function buildData(stats, match, matchId) {
+  const homeTeam = match.HomeTeam || stats.home?.team?.name || 'Home';
+  const awayTeam = match.GuestTeam || stats.away?.team?.name || 'Away';
+
+  const sets = [];
+  for (let i = 1; i <= 5; i++) {
+    const h = match[`Set${i}Home`] ?? 0;
+    const a = match[`Set${i}Guest`] ?? 0;
+    if (h > 0 || a > 0) sets.push({home:h, away:a});
+  }
+
+  const w = match.widget || {};
+  return {
+    matchId: String(matchId),
+    timestamp: new Date().toISOString(),
+    homeTeam, awayTeam,
+    sets,
+    wonSetsHome: match.WonSetHome ?? 0,
+    wonSetsAway: match.WonSetGuest ?? 0,
+    currentSet:  w.current_set ?? sets.length + 1,
+    serve:       w.serve || '',
+    servingNumber: w.serving_player_number ?? '',
+    leftSide:    w.left_side || 'home',
+    lineupHome:  w.lineup_home || [],
+    lineupAway:  w.lineup_guest || [],
+    liberoHome:  w.libero_number_home ?? '',
+    liberoAway:  w.libero_number_guest ?? '',
+    timeouts:    match.timeout_count || [2,2],
+    substitutions: match.substitution_count || [6,6],
+    challenges:  match.challenge_count || [2,2],
+    setBallCount: match.set_ball_count || [0,0],
+    matchBallCount: match.match_ball_count || [0,0],
+    timer:       match.timer || null,
+    homePlayers: (stats.home?.players || []).map(normalizePlayer),
+    awayPlayers: (stats.away?.players || []).map(normalizePlayer),
+    homeTeamStats: normalizePlayer({...(stats.home?.team||{}), name:'', surname:'', shirtNumber:'TEAM', positions:[]}),
+    awayTeamStats: normalizePlayer({...(stats.away?.team||{}), name:'', surname:'', shirtNumber:'TEAM', positions:[]}),
+  };
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+function renderDashboard(d) {
+  document.getElementById('emptyState').style.display  = 'none';
+  document.getElementById('scoreHeader').style.display = 'flex';
+  document.getElementById('sidebarRow').style.display  = 'grid';
+  document.getElementById('homePanel').style.display   = 'block';
+  document.getElementById('awayPanel').style.display   = 'block';
+
+  // Score
+  const hw = d.wonSetsHome, aw = d.wonSetsAway;
+  document.getElementById('homeTeamName').textContent = d.homeTeam;
+  document.getElementById('awayTeamName').textContent = d.awayTeam;
+  const homeEl = document.getElementById('homeSetWins');
+  const awayEl = document.getElementById('awaySetWins');
+  homeEl.textContent = hw;
+  awayEl.textContent = aw;
+  homeEl.className = 'score-number' + (hw > aw ? ' leading' : '');
+  awayEl.className = 'score-number' + (aw > hw ? ' leading' : '');
+
+  // Set scores
+  const sc = document.getElementById('setScores');
+  sc.innerHTML = d.sets.map((s,i) => {
+    const hw2 = s.home > s.away, aw2 = s.away > s.home;
+    return `<div class="set-chip">
+      <span class="${hw2?'w':''}">${s.home}</span>–<span class="${aw2?'w':''}">${s.away}</span>
+    </div>`;
+  }).join('');
+
+  // Live indicators
+  const ind = document.getElementById('liveIndicators');
+  const indicators = [];
+  if (d.serve === 'home') indicators.push(`<span class="indicator ind-serve-home">▶ ${d.homeTeam.split(' ')[0]} Serve</span>`);
+  if (d.serve === 'away') indicators.push(`<span class="indicator ind-serve-away">▶ ${d.awayTeam.split(' ')[0]} Serve</span>`);
+  if (d.setBallCount[0] > 0) indicators.push(`<span class="indicator ind-setball">Set Ball ×${d.setBallCount[0]}</span>`);
+  if (d.setBallCount[1] > 0) indicators.push(`<span class="indicator ind-setball">Set Ball ×${d.setBallCount[1]}</span>`);
+  if (d.matchBallCount[0] > 0) indicators.push(`<span class="indicator ind-matchball">🏆 Match Ball</span>`);
+  if (d.matchBallCount[1] > 0) indicators.push(`<span class="indicator ind-matchball">🏆 Match Ball</span>`);
+  if (d.timer?.timer_type === 'timeout')      indicators.push(`<span class="indicator ind-timeout">⏱ Timeout</span>`);
+  if (d.timer?.timer_type === 'setBreak')     indicators.push(`<span class="indicator ind-timeout">☕ Set Break</span>`);
+  if (d.timer?.timer_type === 'technical')    indicators.push(`<span class="indicator ind-timeout">⏸ Technical TO</span>`);
+  indicators.push(`<span class="indicator" style="color:var(--muted);border-color:var(--border2)">Set ${d.currentSet}</span>`);
+  ind.innerHTML = indicators.join('');
+
+  // Sidebar cards
+  document.getElementById('homeTimeouts').textContent = d.timeouts[0];
+  document.getElementById('awayTimeouts').textContent = d.timeouts[1];
+  document.getElementById('homeSubs').textContent = d.substitutions[0];
+  document.getElementById('awaySubs').textContent = d.substitutions[1];
+  document.getElementById('homeLineup').textContent = d.lineupHome.length ? d.lineupHome.join(' · ') : '—';
+  document.getElementById('awayLineup').textContent = d.lineupAway.length ? d.lineupAway.join(' · ') : '—';
+
+  // Team agg
+  renderTeamAgg('homeTeamAgg', d.homeTeamStats);
+  renderTeamAgg('awayTeamAgg', d.awayTeamStats);
+
+  // Player tables
+  document.getElementById('homePanelName').textContent = d.homeTeam;
+  document.getElementById('awayPanelName').textContent = d.awayTeam;
+  renderPlayerTable('homeBody', d.homePlayers);
+  renderPlayerTable('awayBody', d.awayPlayers);
+}
+
+function renderTeamAgg(id, s) {
+  document.getElementById(id).innerHTML = [
+    ['K', s.attack.kills],
+    ['ACE', s.serve.aces],
+    ['BLK', s.block.points],
+    ['DIG', s.digs.total],
+    ['ERR', s.errors.total],
+  ].map(([l,v]) => `<div class="team-agg-stat">
+    <div class="team-agg-val">${v}</div>
+    <div class="team-agg-lbl">${l}</div>
+  </div>`).join('');
+}
+
+function renderPlayerTable(tbodyId, players) {
+  const tb = document.getElementById(tbodyId);
+  tb.innerHTML = players.map(p => {
+    const sp = Number(p.sets_played);
+    const isOnCourt = p.positions.some(x => x !== null && x !== undefined);
+    return `<tr class="${p.libero?'libero-row':''} ${p.captain?'captain-row':''}">
+      <td>${p.jersey}</td>
+      <td>${p.shirt_name || p.name}${p.libero?' <span style="color:var(--gold);font-size:9px">L</span>':''}</td>
+      <td class="${p.sets_played==='0'?'zero':''}">${p.sets_played}</td>
+      <td class="${numClass(p.points.total)}">${p.points.total}</td>
+      <td class="${numClass(p.serve.aces)}">${p.serve.aces}</td>
+      <td class="${p.serve.errors>0?'eff-bad':'zero'}">${p.serve.errors}</td>
+      <td class="${p.reception.total===0?'zero':''}">${p.reception.total||'-'}</td>
+      <td>${p.reception.total ? pctFmt(p.reception.positive_pct) : '-'}</td>
+      <td>${p.reception.total ? pctFmt(p.reception.perfect_pct) : '-'}</td>
+      <td class="${p.attack.total===0?'zero':''}">${p.attack.total||'-'}</td>
+      <td class="${numClass(p.attack.kills)}">${p.attack.kills}</td>
+      <td class="${p.attack.errors>0?'eff-bad':'zero'}">${p.attack.errors||'-'}</td>
+      <td class="${effClass(p.attack.pct)}">${p.attack.pct ? (parseFloat(p.attack.pct)*100).toFixed(1)+'%' : '-'}</td>
+      <td class="${numClass(p.block.points)}">${p.block.points}</td>
+      <td class="${p.digs.total===0?'zero':''}">${p.digs.total||'-'}</td>
+      <td class="${p.assists===0?'zero':''}">${p.assists||'-'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── XML Generation ───────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function buildXpression(d) {
+  const lines = [
+    `<?xml version="1.0" encoding="UTF-8"?>`,
+    `<!-- Ross Xpression DataPool | MLV Live Stats | Match ${esc(d.matchId)} -->`,
+    `<!-- ${d.timestamp} -->`,
+    `<DataPool>`,
+    `  <Data id="MATCH_ID">${esc(d.matchId)}</Data>`,
+    `  <Data id="TIMESTAMP">${d.timestamp}</Data>`,
+    `  <Data id="CURRENT_SET">${d.currentSet}</Data>`,
+    `  <Data id="SERVE_TEAM">${esc(d.serve)}</Data>`,
+    `  <Data id="SERVING_PLAYER">${esc(d.servingNumber)}</Data>`,
+    `  <Data id="HOME_SET_WINS">${d.wonSetsHome}</Data>`,
+    `  <Data id="AWAY_SET_WINS">${d.wonSetsAway}</Data>`,
+    `  <Data id="HOME_TIMEOUTS_LEFT">${d.timeouts[0]}</Data>`,
+    `  <Data id="AWAY_TIMEOUTS_LEFT">${d.timeouts[1]}</Data>`,
+    `  <Data id="HOME_SUBS_LEFT">${d.substitutions[0]}</Data>`,
+    `  <Data id="AWAY_SUBS_LEFT">${d.substitutions[1]}</Data>`,
+    `  <Data id="HOME_SET_BALLS">${d.setBallCount[0]}</Data>`,
+    `  <Data id="AWAY_SET_BALLS">${d.setBallCount[1]}</Data>`,
+    `  <Data id="HOME_MATCH_BALLS">${d.matchBallCount[0]}</Data>`,
+    `  <Data id="AWAY_MATCH_BALLS">${d.matchBallCount[1]}</Data>`,
+    `  <Data id="HOME_LIBERO">${esc(d.liberoHome)}</Data>`,
+    `  <Data id="AWAY_LIBERO">${esc(d.liberoAway)}</Data>`,
+  ];
+  d.sets.forEach((s,i) => {
+    lines.push(`  <Data id="SET${i+1}_HOME">${s.home}</Data>`);
+    lines.push(`  <Data id="SET${i+1}_AWAY">${s.away}</Data>`);
+  });
+  const addTeam = (pfx, name, players, wins, ts) => {
+    lines.push(`  <Data id="${pfx}_TEAM_NAME">${esc(name)}</Data>`);
+    lines.push(`  <Data id="${pfx}_SET_WINS">${wins}</Data>`);
+    lines.push(`  <Data id="${pfx}_TEAM_KILLS">${ts.attack.kills}</Data>`);
+    lines.push(`  <Data id="${pfx}_TEAM_ACES">${ts.serve.aces}</Data>`);
+    lines.push(`  <Data id="${pfx}_TEAM_BLOCKS">${ts.block.points}</Data>`);
+    lines.push(`  <Data id="${pfx}_TEAM_DIGS">${ts.digs.total}</Data>`);
+    players.forEach((p,i) => {
+      const n = i+1;
+      lines.push(`  <Data id="${pfx}_P${n}_JERSEY">${esc(p.jersey)}</Data>`);
+      lines.push(`  <Data id="${pfx}_P${n}_NAME">${esc(p.name)}</Data>`);
+      lines.push(`  <Data id="${pfx}_P${n}_SHIRT_NAME">${esc(p.shirt_name)}</Data>`);
+      lines.push(`  <Data id="${pfx}_P${n}_LIBERO">${p.libero?'1':'0'}</Data>`);
+      lines.push(`  <Data id="${pfx}_P${n}_SP">${p.sets_played}</Data>`);
+      lines.push(`  <Data id="${pfx}_P${n}_PTS">${p.points.total}</Data>`);
+      lines.push(`  <Data id="${pfx}_P${n}_PTS_SO">${p.points.side_out}</Data>`);
+      lines.push(`  <Data id="${pfx}_P${n}_PTS_BP">${p.points.break_point}</Data>`);
+      lines.push(`  <Data id="${pfx}_P${n}_ACES">${p.serve.aces}</Data>`);
+      lines.push(`  <Data id="${pfx}_P${n}_SERVE_ERR">${p.serve.errors}</Data>`);
+      lines.push(`  <Data id="${pfx}_P${n}_REC_TOT">${p.reception.total}</Data>`);
+      lines.push(`  <Data id="${pfx}_P${n}_REC_POS_PCT">${pctFmt(p.reception.positive_pct)}</Data>`);
+      lines.push(`  <Data id="${pfx}_P${n}_REC_PERF_PCT">${pctFmt(p.reception.perfect_pct)}</Data>`);
+      lines.push(`  <Data id="${pfx}_P${n}_ATK_TOT">${p.attack.total}</Data>`);
+      lines.push(`  <Data id="${pfx}_P${n}_KILLS">${p.attack.kills}</Data>`);
+      lines.push(`  <Data id="${pfx}_P${n}_ATK_ERR">${p.attack.errors}</Data>`);
+      lines.push(`  <Data id="${pfx}_P${n}_ATK_EFF">${p.attack.pct}</Data>`);
+      lines.push(`  <Data id="${pfx}_P${n}_BLK_PTS">${p.block.points}</Data>`);
+      lines.push(`  <Data id="${pfx}_P${n}_DIGS">${p.digs.total}</Data>`);
+      lines.push(`  <Data id="${pfx}_P${n}_ASSISTS">${p.assists}</Data>`);
+    });
+  };
+  addTeam('HOME', d.homeTeam, d.homePlayers, d.wonSetsHome, d.homeTeamStats);
+  addTeam('AWAY', d.awayTeam, d.awayPlayers, d.wonSetsAway, d.awayTeamStats);
+  lines.push('</DataPool>');
+  return lines.join('\n');
+}
+
+function buildDaktronics(d) {
+  const lines = [
+    `<?xml version="1.0" encoding="UTF-8"?>`,
+    `<!-- Daktronics RTD | MLV Live Stats | Match ${esc(d.matchId)} -->`,
+    `<!-- ${d.timestamp} -->`,
+    `<RTD sport="Volleyball" version="2.0">`,
+    `  <Game id="${esc(d.matchId)}" timestamp="${d.timestamp}">`,
+    `    <State>`,
+    `      <CurrentSet>${d.currentSet}</CurrentSet>`,
+    `      <Serve>${esc(d.serve)}</Serve>`,
+    `      <ServingPlayer>${esc(d.servingNumber)}</ServingPlayer>`,
+    `      <SetBalls home="${d.setBallCount[0]}" away="${d.setBallCount[1]}" />`,
+    `      <MatchBalls home="${d.matchBallCount[0]}" away="${d.matchBallCount[1]}" />`,
+    `      <Timeouts home="${d.timeouts[0]}" away="${d.timeouts[1]}" />`,
+    `      <Substitutions home="${d.substitutions[0]}" away="${d.substitutions[1]}" />`,
+    `    </State>`,
+    `    <Sets>`,
+  ];
+  d.sets.forEach((s,i) => lines.push(`      <Set num="${i+1}" home="${s.home}" away="${s.away}" />`));
+  lines.push(`    </Sets>`);
+
+  const addTeam = (type, name, wins, players, ts, lineup, libero) => {
+    lines.push(`    <Team type="${type}">`);
+    lines.push(`      <n>${esc(name)}</n>`);
+    lines.push(`      <SetWins>${wins}</SetWins>`);
+    lines.push(`      <Lineup>${lineup.join(',')}</Lineup>`);
+    lines.push(`      <Libero>${esc(libero)}</Libero>`);
+    lines.push(`      <TeamStats>`);
+    lines.push(`        <Kills>${ts.attack.kills}</Kills>`);
+    lines.push(`        <Aces>${ts.serve.aces}</Aces>`);
+    lines.push(`        <Blocks>${ts.block.points}</Blocks>`);
+    lines.push(`        <Digs>${ts.digs.total}</Digs>`);
+    lines.push(`        <Errors>${ts.errors.total}</Errors>`);
+    lines.push(`      </TeamStats>`);
+    lines.push(`      <Players>`);
+    players.forEach((p,i) => {
+      lines.push(`        <Player num="${i+1}" jersey="${esc(p.jersey)}" libero="${p.libero?'1':'0'}">`);
+      lines.push(`          <n>${esc(p.name)}</n>`);
+      lines.push(`          <ShirtName>${esc(p.shirt_name)}</ShirtName>`);
+      lines.push(`          <SetsPlayed>${p.sets_played}</SetsPlayed>`);
+      lines.push(`          <Points total="${p.points.total}" sideOut="${p.points.side_out}" breakPoint="${p.points.break_point}" />`);
+      lines.push(`          <Serve><Aces>${p.serve.aces}</Aces><Errors>${p.serve.errors}</Errors></Serve>`);
+      lines.push(`          <Reception>`);
+      lines.push(`            <Total>${p.reception.total}</Total>`);
+      lines.push(`            <PositivePct>${pctFmt(p.reception.positive_pct)}</PositivePct>`);
+      lines.push(`            <PerfectPct>${pctFmt(p.reception.perfect_pct)}</PerfectPct>`);
+      lines.push(`          </Reception>`);
+      lines.push(`          <Attack>`);
+      lines.push(`            <Total>${p.attack.total}</Total><Kills>${p.attack.kills}</Kills>`);
+      lines.push(`            <Errors>${p.attack.errors}</Errors><Efficiency>${p.attack.pct}</Efficiency>`);
+      lines.push(`          </Attack>`);
+      lines.push(`          <Block><Points>${p.block.points}</Points></Block>`);
+      lines.push(`          <Digs>${p.digs.total}</Digs>`);
+      lines.push(`          <Assists>${p.assists}</Assists>`);
+      lines.push(`        </Player>`);
+    });
+    lines.push(`      </Players>`);
+    lines.push(`    </Team>`);
+  };
+  addTeam('home', d.homeTeam, d.wonSetsHome, d.homePlayers, d.homeTeamStats, d.lineupHome, d.liberoHome);
+  addTeam('away', d.awayTeam, d.wonSetsAway, d.awayPlayers, d.awayTeamStats, d.lineupAway, d.liberoAway);
+  lines.push(`  </Game>`);
+  lines.push(`</RTD>`);
+  return lines.join('\n');
+}
+
+function syntaxHighlight(xml) {
+  return xml
+    .replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/(&lt;\/?[\w:-]+)/g, '<span class="tag">$1</span>')
+    .replace(/(\w+)=(&quot;[^&]*&quot;)/g, '<span class="attr">$1</span>=<span class="val">$2</span>')
+    .replace(/(&lt;!--.*?--&gt;)/gs, '<span class="cmt">$1</span>');
+}
+
+function renderXml() {
+  if (!currentData) return;
+  const xml = activeXmlTab === 'xpression' ? buildXpression(currentData) : buildDaktronics(currentData);
+  document.getElementById('xmlOutput').innerHTML = syntaxHighlight(xml);
+}
+
+function switchTab(tab) {
+  activeXmlTab = tab;
+  document.querySelectorAll('.xml-tab').forEach((el,i) => {
+    el.classList.toggle('active', (i===0 && tab==='xpression') || (i===1 && tab==='daktronics'));
+  });
+  renderXml();
+}
+
+function toggleXml() {
+  const panel = document.getElementById('xmlPanel');
+  panel.classList.toggle('open');
+  if (panel.classList.contains('open')) renderXml();
+}
+
+function copyXml() {
+  if (!currentData) return;
+  const xml = activeXmlTab === 'xpression' ? buildXpression(currentData) : buildDaktronics(currentData);
+  navigator.clipboard.writeText(xml).then(() => {
+    const btn = document.querySelector('.xml-copy-btn');
+    btn.textContent = '✓ Copied!'; setTimeout(()=>btn.textContent='Copy', 1500);
+  });
+}
+
+function downloadXml(e) {
+  e.preventDefault();
+  if (!currentData) return;
+  const xml = activeXmlTab === 'xpression' ? buildXpression(currentData) : buildDaktronics(currentData);
+  const fname = activeXmlTab === 'xpression' ? 'xpression_stats.xml' : 'daktronics_rtd.xml';
+  const blob = new Blob([xml], {type:'application/xml'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = fname; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── Polling control ──────────────────────────────────────────────────────────
+function startPolling() {
+  const token = document.getElementById('apiToken').value.trim();
+  const matchId = document.getElementById('matchId').value.trim();
+  if (!token) { alert('Enter your API token first.'); return; }
+  if (!matchId) { alert('Enter a Match ID first.'); return; }
+
+  document.getElementById('btnStart').disabled = true;
+  document.getElementById('btnStop').disabled  = false;
+  document.getElementById('btnXml').disabled   = false;
+
+  const interval = parseInt(document.getElementById('interval').value) * 1000;
+  fetchAndRender();
+  pollingTimer = setInterval(fetchAndRender, interval);
+}
+
+function stopPolling() {
+  clearInterval(pollingTimer);
+  pollingTimer = null;
+  document.getElementById('btnStart').disabled = false;
+  document.getElementById('btnStop').disabled  = true;
+  setStatus('idle', 'Stopped');
+}
+
+// ─── Status / Error ───────────────────────────────────────────────────────────
+function setStatus(state, text) {
+  const pill = document.getElementById('statusPill');
+  const span = document.getElementById('statusText');
+  pill.className = `status-pill ${state}`;
+  span.textContent = text;
+}
+
+function showError(e) {
+  const panel = document.getElementById('errorPanel');
+  panel.classList.add('show');
+  document.getElementById('errorTitle').textContent = 'Connection Error';
+  document.getElementById('errorMsg').textContent   = e.message;
+  let hint = '';
+  if (e.message.includes('fetch') || e.message.includes('Failed') || e.message.includes('NetworkError')) {
+    hint = 'Cannot reach proxy. Make sure proxy.js is running: node proxy.js';
+  } else if (e.message.includes('401')) {
+    hint = 'Invalid API token. Check the token from your VolleyStation admin.';
+  } else if (e.message.includes('404')) {
+    hint = 'Match ID not found. Use the ⌕ Lookup button to find valid Match IDs.';
+  }
+  document.getElementById('errorHint').textContent = hint;
+}
+
+function hideError() {
+  document.getElementById('errorPanel').classList.remove('show');
+}
+
+// ─── Lookup modal ─────────────────────────────────────────────────────────────
+function showLookup() {
+  document.getElementById('lookupModal').style.display = 'flex';
+}
+function closeLookup() {
+  document.getElementById('lookupModal').style.display = 'none';
+}
+
+async function runLookup() {
+  const champId = document.getElementById('lookupChampId').value.trim();
+  if (!champId) return;
+  const results = document.getElementById('lookupResults');
+  results.innerHTML = '<span style="color:var(--gold)">Searching…</span>';
+
+  try {
+    const matches = await vsGet(`Matches/?Championship_ID=${champId}`);
+    if (!matches.length) {
+      results.innerHTML = '<span style="color:var(--muted)">No matches found for this championship.</span>';
+      return;
+    }
+    const today = new Date().toISOString().slice(0,10);
+    const rows = matches
+      .sort((a,b) => (b.MatchDateTime||'').localeCompare(a.MatchDateTime||''))
+      .slice(0, 20)
+      .map(m => {
+        const isToday = (m.MatchDateTime||'').startsWith(today);
+        const dt = m.MatchDateTime ? new Date(m.MatchDateTime).toLocaleString() : '—';
+        return `<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer"
+          onclick="selectMatch('${m.ChampionshipMatch_ID}')">
+          <span style="font-family:var(--font-mono);font-size:12px;color:var(--accent);min-width:70px">${m.ChampionshipMatch_ID}</span>
+          <span style="flex:1;color:var(--text-bright);font-weight:600">${m.HomeTeam} vs ${m.GuestTeam}</span>
+          <span style="font-size:11px;color:${isToday?'var(--green)':'var(--muted)'}">${dt}</span>
+          ${m.WonSetHome||m.WonSetGuest ? `<span style="font-family:var(--font-mono);font-size:12px;color:var(--text)">${m.WonSetHome}–${m.WonSetGuest}</span>` : ''}
+        </div>`;
+      }).join('');
+    results.innerHTML = `<div style="font-size:11px;color:var(--muted);margin-bottom:8px">Click a match to use its ID</div>${rows}`;
+  } catch(e) {
+    results.innerHTML = `<span style="color:var(--accent2)">Error: ${e.message}</span>`;
+  }
+}
+
+function selectMatch(id) {
+  document.getElementById('matchId').value = id;
+  closeLookup();
+}
+
+// Close modal on backdrop click
+document.getElementById('lookupModal').addEventListener('click', function(e) {
+  if (e.target === this) closeLookup();
+});
+
+// Persist token to sessionStorage (not localStorage — stays in tab only)
+document.getElementById('apiToken').addEventListener('input', function() {
+  sessionStorage.setItem('vs_token', this.value);
+});
+document.addEventListener('DOMContentLoaded', () => {
+  const saved = sessionStorage.getItem('vs_token');
+  if (saved) document.getElementById('apiToken').value = saved;
+});
+</script>
+</body>
+</html>
