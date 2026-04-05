@@ -646,13 +646,19 @@ function hitPctStr(p){
 // no two players on the same team show the same display name.
 function normP(raw){
   const t=raw.total||{},s=t.skills||{},p=t.points||{},pct2=t.percentages||{},e=t.efficiencies||{},err=t.errors||{};
-  // Full name: first + last from VS API fields
-  const nm=[raw.name,raw.surname].filter(Boolean).join(' ')||raw.shirtName||'Unknown';
-  // shirt_name: what VS intends to show on scoreboards (often just last name or nickname)
-  // We'll post-process duplicates after building the full array
-  const shirt=raw.shirtName||nm;
+  // NCAA name format: "Surname, Firstname" - matches crei.xml and scoreboard convention
+  // VS API: name=first, surname=last
+  const first=raw.name||'', last=raw.surname||'';
+  const ncaaName = last && first ? last+', '+first : last||first||raw.shirtName||'Unknown';
+  // Natural "Firstname Surname" order for dashboard display only
+  const displayName = [first,last].filter(Boolean).join(' ')||raw.shirtName||'Unknown';
+  // shirt_name: VS scoreboard display name (often just last name or nickname)
+  const shirt=raw.shirtName||displayName;
   return{
-    jersey:String(raw.shirtNumber??''),name:nm,shirt_name:shirt,
+    jersey:String(raw.shirtNumber??''),
+    name:ncaaName,           // NCAA "Surname, Firstname" - used in XML
+    display_name:displayName, // "Firstname Surname" - used in dashboard UI only
+    shirt_name:shirt,        // VS scoreboard name - used in UI and XML ShirtName
     libero:raw.libero||false,captain:raw.captain||false,
     positions:raw.positions||[],
     sets_played:String((raw.positions||[]).filter(x=>x!==null).length),
@@ -662,7 +668,8 @@ function normP(raw){
     reception:{total:skS(s,'R'),errors:sk(s,'R','='),perfect:sk(s,'R','#'),pos_pct:pct2.R?.['#+']??'',perf_pct:pct2.R?.['#']??''},
     attack:{total:skS(s,'A'),kills:sk(s,'A','#'),errors:sk(s,'A','='),pct:e.A??''},
     block:{points:sk(s,'B','#'),errors:sk(s,'B','=')},
-    digs:{total:sk(s,'D','#')},
+    // FIX: sum ALL dig effects not just D# (perfect digs)
+    digs:{total:skS(s,'D')},
     assists:t.assists??0,
     onCourt:false,courtZone:0,isLibero:false,isServing:false,
   };
@@ -679,7 +686,7 @@ function dedupeShirtNames(players){
   players.forEach(p=>{
     if(shirtCount[p.shirt_name]>1){
       // Collision — use full name instead
-      p.shirt_name=p.name;
+      p.shirt_name=p.display_name;
     }
   });
   // Second pass: if full names also collide (identical twins edge case), add jersey
@@ -687,7 +694,7 @@ function dedupeShirtNames(players){
   players.forEach(p=>{nameCount[p.shirt_name]=(nameCount[p.shirt_name]||0)+1;});
   players.forEach(p=>{
     if(nameCount[p.shirt_name]>1){
-      p.shirt_name=`${p.name} #${p.jersey}`;
+      p.shirt_name=p.display_name+' #'+p.jersey;
     }
   });
 }
@@ -867,7 +874,7 @@ function renderCourtGrid(id,onCourt,isServTeam,servNum,teamName){
     return `<div class="${cls}" role="listitem" aria-label="Zone ${zone}: #${p.jersey} ${p.name}${p.isLibero?' (Libero)':''}${isServ?' (Serving)':''}">
       <span class="zone-num" aria-hidden="true">${zone}</span>
       <div class="zone-jersey">#${p.jersey}${p.isLibero?'<span class="badge badge-l" aria-hidden="true">L</span>':''}${isServ?'<span class="badge badge-s" aria-hidden="true">SRV</span>':''}</div>
-      <div class="zone-name">${p.shirt_name||p.name}</div>
+      <div class="zone-name">${p.shirt_name||p.display_name}</div>
       ${topStat?`<div class="zone-stat">${topStat}</div>`:''}
     </div>`;
   }).join('');
@@ -895,7 +902,7 @@ function renderTbl(id,players,isServTeam,servNum){
     const hp=hitPct(p);
     return `<tr class="${rowCls}">
       <td>${p.jersey}</td>
-      <td>${p.shirt_name||p.name}${p.captain?'<span style="color:var(--gd);font-size:9px;margin-left:3px" aria-label="Captain">&copy;</span>':''}</td>
+      <td>${p.shirt_name||p.display_name}${p.captain?'<span style="color:var(--gd);font-size:9px;margin-left:3px" aria-label="Captain">&copy;</span>':''}</td>
       <td>${courtBadge}</td>
       <td class="${p.sets_played==='0'?'z':[]}">${p.sets_played}</td>
       <td class="${nc(p.points.total)}">${p.points.total}</td>
