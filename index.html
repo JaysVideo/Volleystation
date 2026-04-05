@@ -670,7 +670,8 @@ function normP(raw){
     attack:{total:skS(s,'A'),kills:sk(s,'A','#'),errors:sk(s,'A','='),pct:e.A??''},
     block:{points:sk(s,'B','#'),errors:sk(s,'B','=')},
     // FIX: sum ALL dig effects not just D# (perfect digs)
-    digs:{total:skS(s,'D')},
+    // Digs = all in-play effects: # + ! / - but NOT = (error means ball hit floor)
+    digs:{total:(()=>{const d=s['D']||{};return['#','+','!','/','-'].reduce((a,k)=>a+(Number(d[k])||0),0);})()},
     assists:t.assists??0,
     onCourt:false,courtZone:0,isLibero:false,isServing:false,
   };
