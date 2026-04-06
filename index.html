@@ -281,6 +281,9 @@ pre.xout .tg{color:#569cd6}pre.xout .at{color:#9cdcfe}pre.xout .vl{color:#ce9178
   <button class="btn" id="btnSetLoc" onclick="setSaveLocations()" disabled
     style="background:transparent;color:#a78bfa;border:1px solid #a78bfa"
     aria-label="Set auto-save file locations">&#128193; Set Save Location</button>
+  <button class="btn" id="btnSaveNow" onclick="saveNow()" disabled
+    style="background:transparent;color:#22d46b;border:1px solid #22d46b"
+    aria-label="Export XML now for current match state">&#8595; Save Now</button>
   <div id="saveStatus" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--mt)" aria-live="polite"></div>
 </div>
 
@@ -524,7 +527,60 @@ async function setSaveLocations(){
   }
 }
 
-// ── Auto-save to file ─────────────────────────────────────────────────────────
+// ── Save Now — export current match state immediately ─────────────────────────
+// If a save location is already set, writes to it (force=true).
+// If no location is set yet, triggers the location picker first then saves.
+// Falls back to browser download if File System Access API not supported.
+async function saveNow(){
+  if(!curData){
+    setSaveStatus('err','No data loaded yet — start polling first');
+    setTimeout(()=>setSaveStatus('',''),3000);
+    return;
+  }
+  const fmt=getSaveFmt();
+  const btn=document.getElementById('btnSaveNow');
+  const prev=btn.textContent;
+  btn.textContent='Saving…';btn.disabled=true;
+
+  if(!fsaaSupported){
+    // Fallback: trigger browser download(s)
+    _downloadXml(fmt);
+    btn.textContent=prev;btn.disabled=false;
+    setSaveStatus('ok','\u2713 Downloaded '+new Date().toLocaleTimeString());
+    setTimeout(()=>setSaveStatus('',''),3000);
+    return;
+  }
+
+  // Check if we have file handles already set
+  const needXpr=(fmt==='both'||fmt==='xpression')&&!fileHandles.xpression;
+  const needDak=(fmt==='both'||fmt==='daktronics')&&!fileHandles.daktronics;
+
+  if(needXpr||needDak){
+    // No location set yet — prompt for it first
+    setSaveStatus('pending','Choose save location\u2026');
+    if(needXpr){const r=await pickSaveFile('xpression');if(!r){btn.textContent=prev;btn.disabled=false;setSaveStatus('','');return;}}
+    if(needDak){const r=await pickSaveFile('daktronics');if(!r){btn.textContent=prev;btn.disabled=false;setSaveStatus('','');return;}}
+  }
+
+  // Force-write current state regardless of whether data changed
+  await autoSave(true);
+  btn.textContent=prev;btn.disabled=false;
+}
+
+function _downloadXml(fmt){
+  // Browser download fallback — triggers Save As dialog for each format
+  const dl=(xml,filename)=>{
+    const blob=new Blob([xml],{type:'application/xml;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=filename;
+    document.body.appendChild(a);a.click();
+    setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},100);
+  };
+  if(fmt==='both'||fmt==='xpression') dl(buildXpression(curData),'xpression_stats.xml');
+  if(fmt==='both'||fmt==='daktronics') dl(buildDaktronics(curData),'daktronics_rtd.xml');
+}
+
+
 async function autoSave(force){
   if(!fsaaSupported||!curData)return;
   const fmt=getSaveFmt();
@@ -1311,6 +1367,7 @@ function startPolling(){
   document.getElementById('btnP').disabled=false;
   document.getElementById('btnX').disabled=false;
   document.getElementById('btnSetLoc').disabled=false;
+  document.getElementById('btnSaveNow').disabled=false;
   const iv=parseInt(document.getElementById('iv').value)*1000;
   fetchAndRender();
   pollTimer=setInterval(fetchAndRender,iv);
