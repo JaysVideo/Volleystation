@@ -594,15 +594,46 @@ function setSaveStatus(cls,msg){
 // ── Dropdown ──────────────────────────────────────────────────────────────────
 const sel=document.getElementById('msel');
 const today=new Date().toISOString().slice(0,10);
-let tg=null,ug=null;
+
+// Separate matches into buckets
+const pastM=[],todayM=[],upcomingM=[];
 M.forEach(m=>{
-  const d0=m.dt.slice(0,10),isT=d0===today,isPast=d0<today;
-  if(isT&&!tg){tg=document.createElement('optgroup');tg.label='Today';sel.appendChild(tg);}
-  if(!isPast&&!isT&&!ug){ug=document.createElement('optgroup');ug.label='Upcoming';sel.appendChild(ug);}
-  const dt=m.dt.replace(/:\d\d [A-Z]+$/,'');
-  const o=new Option(`${dt} \u2014 ${m.home} vs ${m.away}${m.bc?' ['+m.bc+']':''} (${m.id})`,m.id);
-  if(isT)tg?.appendChild(o);else if(!isPast)ug?.appendChild(o);
+  const d0=m.dt.slice(0,10);
+  if(d0<today)pastM.push(m);
+  else if(d0===today)todayM.push(m);
+  else upcomingM.push(m);
 });
+
+// Today group
+if(todayM.length){
+  const tg=document.createElement('optgroup');tg.label='Today';
+  todayM.forEach(m=>{
+    const dt=m.dt.replace(/:\d\d [A-Z]+$/,'');
+    tg.appendChild(new Option(`${dt} \u2014 ${m.home} vs ${m.away}${m.bc?' ['+m.bc+']':''} (${m.id})`,m.id));
+  });
+  sel.appendChild(tg);
+}
+
+// Upcoming group
+if(upcomingM.length){
+  const ug=document.createElement('optgroup');ug.label='Upcoming';
+  upcomingM.forEach(m=>{
+    const dt=m.dt.replace(/:\d\d [A-Z]+$/,'');
+    ug.appendChild(new Option(`${dt} \u2014 ${m.home} vs ${m.away}${m.bc?' ['+m.bc+']':''} (${m.id})`,m.id));
+  });
+  sel.appendChild(ug);
+}
+
+// Completed group — most recent first
+if(pastM.length){
+  const pg=document.createElement('optgroup');pg.label=`Completed (${pastM.length})`;
+  [...pastM].reverse().forEach(m=>{
+    const dt=m.dt.replace(/:\d\d [A-Z]+$/,'');
+    pg.appendChild(new Option(`${dt} \u2014 ${m.home} vs ${m.away} (${m.id})`,m.id));
+  });
+  sel.appendChild(pg);
+}
+
 sel.appendChild(new Option('\u2014 Enter ID manually \u2014','__manual__'));
 sel.addEventListener('change',()=>{
   const mi=document.getElementById('manId');
@@ -671,7 +702,12 @@ function normP(raw){
     block:{points:sk(s,'B','#'),errors:sk(s,'B','=')},
     // FIX: sum ALL dig effects not just D# (perfect digs)
     // Digs = all in-play effects: # + ! / - but NOT = (error means ball hit floor)
-    digs:{total:(()=>{const d=s['D']||{};return['#','+','!','/','-'].reduce((a,k)=>a+(Number(d[k])||0),0);})()},
+    digs:{total:(()=>{
+      const d=s['D']||{},f=s['F']||{};
+      const dCount=['#','+','!','/','-'].reduce((a,k)=>a+(Number(d[k])||0),0);
+      const fCount=Object.values(f).reduce((a,b)=>a+(Number(b)||0),0);
+      return dCount+fCount;
+    })()},
     assists:t.assists??0,
     onCourt:false,courtZone:0,isLibero:false,isServing:false,
   };
@@ -745,6 +781,16 @@ async function fetchAndRender(){
       vsGet(`match-stats-summary/${mid}`),
       vsGet(`Matches/${mid}?show_timer=1`)
     ]);
+    // Fetch hall and referee data to enrich XML venue/officials fields
+    let hallData=null,ref1Data=null,ref2Data=null;
+    try{
+      if(match.Hall_ID)hallData=await vsGet(`Halls/${match.Hall_ID}/`);
+      if(match.Referee1_ID)ref1Data=await vsGet(`Referees/${match.Referee1_ID}/`);
+      if(match.Referee2_ID)ref2Data=await vsGet(`Referees/${match.Referee2_ID}/`);
+    }catch(e){/* venue/ref data optional — don't fail if unavailable */}
+    if(hallData){match._hall=hallData;}
+    if(ref1Data)match._ref1=ref1Data;
+    if(ref2Data)match._ref2=ref2Data;
     curData=buildData(stats,match,mid);
     render(curData);
     renderXml();
@@ -777,13 +823,23 @@ function buildData(stats,match,mid){
     wonHome:match.WonSetHome??0,wonAway:match.WonSetGuest??0,
     curSet:w.current_set??sets.length+1,
     serve:w.serve||'',servingNum:String(w.serving_player_number??''),
+    inRally:w.in_rally||false,
+    challenge:match.challenge_team?{team:match.challenge_team,reason:match.challenge_reason||''}:null,
     lineupHome:w.lineup_home||[],lineupAway:w.lineup_guest||[],
     liberoHome:String(w.libero_number_home??''),liberoAway:String(w.libero_number_guest??''),
     timeouts:match.timeout_count||[2,2],subs:match.substitution_count||[6,6],
     setBalls:match.set_ball_count||[0,0],matchBalls:match.match_ball_count||[0,0],
-    timer:match.timer||null,
+    timer:match.timer?{...match.timer,
+    // Pre-calculate end time for display countdown
+    endTime:match.timer.start?new Date(new Date(match.timer.start).getTime()+match.timer.duration*1000).toISOString():null
+  }:null,
     matchDateTime:match.MatchDateTime||'',
     spectators:match.Spectators??'',
+    hallId:match.Hall_ID||null,
+    arenaName:match._hall?.Denomination||'',
+    arenaCity:match._hall?.City||'',
+    ref1:match._ref1?`${match._ref1.Name||''} ${match._ref1.Surname||''}`.trim():'',
+    ref2:match._ref2?`${match._ref2.Name||''} ${match._ref2.Surname||''}`.trim():'',
     homePlayers,awayPlayers,homeOnCourt,awayOnCourt,
     homeTeamStats:normP({...(stats.home?.team||{}),name:'',surname:'',shirtNumber:'TEAM',positions:[]}),
     awayTeamStats:normP({...(stats.away?.team||{}),name:'',surname:'',shirtNumber:'TEAM',positions:[]}),
@@ -817,6 +873,7 @@ function render(d){
   if(d.setBalls[0]>0)iH.push(`<span class="ind ib">Set Ball x${d.setBalls[0]}</span>`);
   if(d.setBalls[1]>0)iH.push(`<span class="ind ib">Set Ball x${d.setBalls[1]}</span>`);
   if(d.matchBalls[0]>0||d.matchBalls[1]>0)iH.push('<span class="ind im">&#127942; Match Ball</span>');
+  if(d.challenge)iH.push(`<span class="ind" style="color:#ff9f00;border-color:#ff9f00;background:rgba(255,159,0,.1)">&#9654; Challenge: ${d.challenge.team} (${(d.challenge.reason||'').replace(/([A-Z])/g,' $1').trim()})</span>`);
   if(d.timer?.timer_type==='timeout')iH.push('<span class="ind it">&#9201; Timeout</span>');
   if(d.timer?.timer_type==='setBreak')iH.push('<span class="ind it">Set Break</span>');
   if(d.timer?.timer_type==='technical')iH.push('<span class="ind it">Technical TO</span>');
@@ -1003,8 +1060,10 @@ function buildNCAA(d, mode){
   // attend       = Spectators ✓ (may be 0 if not yet reported)
   // gameset      = sets completed so far ✓
   // location/arena/schednote/leaguegame/neutralgame/nitegame/postseason = not in VS API → ""
-  x(`  <venue gameid="${e(d.matchId)}" visid="${e(vCode)}" visname="${e(vName)}" homeid="${e(hCode)}" homename="${e(hName)}" date="${e(ncaaDate(matchDt))}" location="" arena="" start="${e(ncaaTime(matchDt))}" attend="${e(d.spectators??'')}" schednote="" leaguegame="" neutralgame="" nitegame="" postseason="" gameset="${d.sets.length}">`);
+  x(`  <venue gameid="${e(d.matchId)}" visid="${e(vCode)}" visname="${e(vName)}" homeid="${e(hCode)}" homename="${e(hName)}" date="${e(ncaaDate(matchDt))}" location="${e(d.arenaCity)}" arena="${e(d.arenaName)}" start="${e(ncaaTime(matchDt))}" attend="${e(d.spectators??'')}" schednote="" leaguegame="" neutralgame="" nitegame="" postseason="" gameset="${d.sets.length}">`);
   x(`    <officials>`);
+  if(d.ref1)x(`      <official title="1st Referee" name="${e(d.ref1)}"></official>`);
+  if(d.ref2)x(`      <official title="2nd Referee" name="${e(d.ref2)}"></official>`);
   x(`    </officials>`);
   x(`    <notes>`);
   x(`    </notes>`);
