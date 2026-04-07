@@ -273,11 +273,31 @@ pre.xout .tg{color:#569cd6}pre.xout .at{color:#9cdcfe}pre.xout .vl{color:#ce9178
   <button class="btn bx" id="btnX" onclick="toggleXml()" disabled aria-expanded="false" aria-controls="xpanel" aria-label="Toggle XML output panel">&#8595; XML</button>
   <div class="dv" role="separator"></div>
   <label for="fmtSel">Save Format</label>
-  <select id="fmtSel" aria-label="XML save format">
+  <select id="fmtSel" aria-label="XML save format" onchange="onFmtChange()">
     <option value="both">Both</option>
     <option value="xpression">Xpression only</option>
     <option value="daktronics">Daktronics only</option>
   </select>
+  <div id="fnWrap" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+    <div id="fnXpr" style="display:flex;align-items:center;gap:4px">
+      <label for="fnXprInput" style="font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--mt);text-transform:uppercase">XPR filename</label>
+      <input id="fnXprInput" type="text" value="xpression_stats" placeholder="xpression_stats"
+        style="width:140px;background:var(--bg);border:1px solid var(--br2);color:var(--tb);font-family:'JetBrains Mono',monospace;font-size:11px;padding:5px 8px;border-radius:4px;outline:none"
+        aria-label="Xpression XML filename (without .xml)"
+        onfocus="this.style.borderColor='var(--ac)'" onblur="this.style.borderColor='var(--br2)'"
+        title="Filename for Xpression XML (without .xml extension)"
+        onchange="fileHandles.xpression=null;lastXpressionXml='';setSaveStatus('','');">.xml</input>
+    </div>
+    <div id="fnDak" style="display:flex;align-items:center;gap:4px">
+      <label for="fnDakInput" style="font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--mt);text-transform:uppercase">DAK filename</label>
+      <input id="fnDakInput" type="text" value="daktronics_rtd" placeholder="daktronics_rtd"
+        style="width:140px;background:var(--bg);border:1px solid var(--br2);color:var(--tb);font-family:'JetBrains Mono',monospace;font-size:11px;padding:5px 8px;border-radius:4px;outline:none"
+        aria-label="Daktronics XML filename (without .xml)"
+        onfocus="this.style.borderColor='var(--ac)'" onblur="this.style.borderColor='var(--br2)'"
+        title="Filename for Daktronics XML (without .xml extension)"
+        onchange="fileHandles.daktronics=null;lastDakXml='';setSaveStatus('','');">.xml</input>
+    </div>
+  </div>
   <button class="btn" id="btnSetLoc" onclick="setSaveLocations()" disabled
     style="background:transparent;color:#a78bfa;border:1px solid #a78bfa"
     aria-label="Set auto-save file locations">&#128193; Set Save Location</button>
@@ -475,6 +495,25 @@ let lastXpressionXml='', lastDakXml='';  // track changes
 
 function getSaveFmt(){return document.getElementById('fmtSel').value;}
 
+// Filename helpers — strip any user-typed extension, always append .xml
+function getFilename(type){
+  const id=type==='xpression'?'fnXprInput':'fnDakInput';
+  const raw=(document.getElementById(id)?.value||'').trim().replace(/\.xml$/i,'');
+  return(raw||( type==='xpression'?'xpression_stats':'daktronics_rtd'))+'.xml';
+}
+
+// Show/hide filename inputs based on selected format
+function onFmtChange(){
+  const fmt=getSaveFmt();
+  const xEl=document.getElementById('fnXpr'),dEl=document.getElementById('fnDak');
+  if(xEl)xEl.style.display=(fmt==='daktronics')?'none':'flex';
+  if(dEl)dEl.style.display=(fmt==='xpression')?'none':'flex';
+  // Reset file handles when format changes — old handles may not match new filenames
+  fileHandles={xpression:null,daktronics:null};
+  lastXpressionXml='';lastDakXml='';
+  setSaveStatus('','');
+}
+
 // Check FSAA support and show warning if not available
 if(!fsaaSupported){
   const w=document.getElementById('fsaaWarn');
@@ -483,7 +522,7 @@ if(!fsaaSupported){
 
 // ── Pick save location for one format ─────────────────────────────────────────
 async function pickSaveFile(type){
-  const suggestedName = type==='xpression'?'xpression_stats.xml':'daktronics_rtd.xml';
+  const suggestedName = getFilename(type);
   try{
     const handle = await window.showSaveFilePicker({
       suggestedName,
@@ -576,8 +615,8 @@ function _downloadXml(fmt){
     document.body.appendChild(a);a.click();
     setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},100);
   };
-  if(fmt==='both'||fmt==='xpression') dl(buildXpression(curData),'xpression_stats.xml');
-  if(fmt==='both'||fmt==='daktronics') dl(buildDaktronics(curData),'daktronics_rtd.xml');
+  if(fmt==='both'||fmt==='xpression') dl(buildXpression(curData),getFilename('xpression'));
+  if(fmt==='both'||fmt==='daktronics') dl(buildDaktronics(curData),getFilename('daktronics'));
 }
 
 
