@@ -800,7 +800,9 @@ function normP(raw){
     digs:{total:(()=>{
       const d=s['D']||{},f=s['F']||{};
       const dCount=['#','+','!','/','-'].reduce((a,k)=>a+(Number(d[k])||0),0);
-      const fCount=Object.values(f).reduce((a,b)=>a+(Number(b)||0),0);
+      // F (freeball): VS UI counts F# and F+ as digs (in-system touches only)
+      // F- (out of system), F/ (overpass), F= (error) are NOT counted as digs
+      const fCount=['#','+'].reduce((a,k)=>a+(Number(f[k])||0),0);
       return dCount+fCount;
     })()},
     assists:t.assists??0,
