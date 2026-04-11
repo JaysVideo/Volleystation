@@ -988,8 +988,6 @@ function buildData(stats,match,mid,scoutDigs){
       if(d!==undefined){p.digs={total:d};p._digsFromScout=true;}
     });
   }
-  const homePlayers=(stats.home?.players||[]).map(normP);
-  const awayPlayers=(stats.away?.players||[]).map(normP);
   // Resolve duplicate shirt names within each team before any rendering or XML output.
   // All stat lookups remain jersey-keyed; this only affects the displayed name string.
   dedupeShirtNames(homePlayers);
