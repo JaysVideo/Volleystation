@@ -308,8 +308,8 @@ pre.xout .tg{color:#569cd6}pre.xout .at{color:#9cdcfe}pre.xout .vl{color:#ce9178
 </div>
 
 <div id="cw" role="note" aria-label="Connection information">
-  &#9889; Tries direct API first &#8212; no proxy needed. If CORS blocked, run <code>node proxy.js</code> and it retries automatically.
-  <span id="cok" style="color:var(--gn);display:none" aria-live="polite">&#10003; Direct API working &#8212; no proxy needed.</span>
+  &#9889; Connects directly to the VolleyStation API &#8212; no proxy required.
+  <span id="cok" style="color:var(--gn);display:none" aria-live="polite">&#10003; API connected successfully.</span>
   &nbsp;&#128229; Auto-save uses the browser&#8217;s File System Access API &#8212; requires <strong>Chrome or Edge</strong>. First save prompts for file location; after that it writes silently on every update.
   <span id="fsaaWarn" style="color:var(--ac2);display:none">&#9888; Auto-save not supported in this browser. Use the Download button instead.</span>
 </div>
@@ -485,8 +485,7 @@ const M=[{"id": 2256597, "home": "Atlanta Vibe", "away": "Columbus Fury", "dt": 
 const TEAMS={"Atlanta Vibe": {"primary": "#EF3240", "secondary": "#8EC8E9", "logo": "https://assets.volleystation.com/website/teams/2109694/badge.svg"}, "Columbus Fury": {"primary": "#BA0C2F", "secondary": "#FFD100", "logo": "https://assets.volleystation.com/website/teams/2109695/badge.svg"}, "Grand Rapids Rise": {"primary": "#00573F", "secondary": "#8B2332", "logo": "https://assets.volleystation.com/website/teams/2109700/badge.svg"}, "Indy Ignite": {"primary": "#F5A800", "secondary": "#002B5C", "logo": "https://assets.volleystation.com/website/teams/2124335/badge.svg"}, "Omaha Supernovas": {"primary": "#003087", "secondary": "#A50034", "logo": "https://assets.volleystation.com/website/teams/2121397/badge.svg"}, "Orlando Valkyries": {"primary": "#512D6D", "secondary": "#00B5E2", "logo": "https://assets.volleystation.com/website/teams/2109697/badge.svg"}, "San Diego Mojo": {"primary": "#FF6B00", "secondary": "#002D62", "logo": "https://assets.volleystation.com/website/teams/2109698/badge.svg"}, "Dallas Pulse": {"primary": "#C8102E", "secondary": "#1B3A7A", "logo": "https://assets.volleystation.com/website/teams/2109699/badge.svg"}};
 
 const API='https://panel.volleystation.com/api';
-const PROXY='http://localhost:3030';
-let useProxy=false,curData=null,xmlTab='xpression',pollTimer=null;
+let directOk=false,curData=null,xmlTab='xpression',pollTimer=null;
 
 // ── File System Access API auto-save state ────────────────────────────────────
 const fsaaSupported = 'showSaveFilePicker' in window;
@@ -849,47 +848,29 @@ function resolveCourtState(players,lineup,liberoJersey,servingJersey,isServingTe
   });
 }
 
-// ── API fetch (direct first, proxy fallback) ──────────────────────────────────
-// useProxy: true = CORS blocked direct API, must use proxy
-// proxyDown: true = proxy also not reachable — stop trying until user action
-let proxyDown=false;
+// ── API fetch — direct only, no proxy required ────────────────────────────────
+// The VS API supports CORS from browsers when using the Authorization header.
+// If direct access fails, we surface a clear error rather than hammering a proxy.
 async function vsGet(path){
   const tok=document.getElementById('tok').value.trim();
-  if(!useProxy){
-    try{
-      const r=await fetch(`${API}/${path}`,{
-        headers:{'Authorization':`Token ${tok}`,'Accept':'application/json'},
-        signal:AbortSignal.timeout(8000)
-      });
-      if(r.ok){
-        document.getElementById('cok').style.display='inline';
-        proxyDown=false;
-        return r.json();
-      }
-      if(r.status===401)throw new Error('HTTP 401 \u2014 check your API token');
-      if(r.status===404)throw new Error('HTTP 404 \u2014 match ID not found');
-      throw new Error(`HTTP ${r.status}`);
-    }catch(e){
-      if(e.message.includes('401')||e.message.includes('404'))throw e;
-      // CORS blocked — switch to proxy mode
-      useProxy=true;
-    }
-  }
-  // If proxy is known down, throw immediately without a network attempt
-  if(proxyDown)throw new Error('Proxy not running \u2014 start node proxy.js or check CORS');
   try{
-    const r=await fetch(`${PROXY}/vs?path=${encodeURIComponent(path)}&token=${encodeURIComponent(tok)}`,
-      {signal:AbortSignal.timeout(4000)});
-    if(!r.ok){const t=await r.text().catch(()=>'');throw new Error(`Proxy: HTTP ${r.status} ${t.slice(0,80)}`);}
-    proxyDown=false;
-    return r.json();
-  }catch(e){
-    // Mark proxy as down so subsequent calls in this poll cycle skip it
-    if(e.message.includes('Failed to fetch')||e.message.includes('ERR_CONNECTION_REFUSED')||e.message.includes('NetworkError')||e.name==='TypeError'){
-      proxyDown=true;
-      throw new Error('Proxy not running \u2014 start node proxy.js locally');
+    const r=await fetch(`${API}/${path}`,{
+      headers:{'Authorization':`Token ${tok}`,'Accept':'application/json'},
+      signal:AbortSignal.timeout(8000)
+    });
+    if(r.ok){
+      if(!directOk){directOk=true;document.getElementById('cok').style.display='inline';}
+      return r.json();
     }
-    throw e;
+    if(r.status===401)throw new Error('HTTP 401 \u2014 check your API token');
+    if(r.status===403)throw new Error('HTTP 403 \u2014 access denied for this endpoint');
+    if(r.status===404)throw new Error('HTTP 404 \u2014 match ID not found');
+    throw new Error(`HTTP ${r.status}`);
+  }catch(e){
+    // Re-throw auth/permission errors immediately
+    if(e.message.includes('401')||e.message.includes('403')||e.message.includes('404'))throw e;
+    // Network/CORS error — throw with helpful message
+    throw new Error('API unreachable \u2014 check your network connection and token');
   }
 }
 
@@ -950,38 +931,27 @@ async function fetchAndRender(){
   const mid=getMid();if(!mid)return;
   try{
     setSt('loading','Fetching\u2026');
-    proxyDown=false; // reset each cycle so proxy gets a fresh chance if it was started
     const[stats,match]=await Promise.all([
       vsGet(`match-stats-summary/${mid}`),
       vsGet(`Matches/${mid}?show_timer=1`)
     ]);
-    // Fetch hall, referee, and play-by-play data in parallel — all optional, silent on failure
-    let hallData=null,ref1Data=null,ref2Data=null,pbpData=null;
+    // Fetch hall and referee data in parallel — optional, silent on failure
+    // Note: play-by-play endpoint returns 403 with current token — disabled
+    let hallData=null,ref1Data=null,ref2Data=null;
     try{
       const extras=await Promise.allSettled([
         match.Hall_ID?vsGet(`Halls/${match.Hall_ID}/`):Promise.resolve(null),
         match.Referee1_ID?vsGet(`Referees/${match.Referee1_ID}/`):Promise.resolve(null),
         match.Referee2_ID?vsGet(`Referees/${match.Referee2_ID}/`):Promise.resolve(null),
-        vsGet(`play-by-play-data/${mid}/`)
       ]);
       hallData=extras[0].status==='fulfilled'?extras[0].value:null;
       ref1Data=extras[1].status==='fulfilled'?extras[1].value:null;
       ref2Data=extras[2].status==='fulfilled'?extras[2].value:null;
-      pbpData =extras[3].status==='fulfilled'?extras[3].value:null;
     }catch(e){/* enrichment optional */}
+    match._scoutDigs=null; // play-by-play unavailable with current token
     if(hallData)match._hall=hallData;
     if(ref1Data)match._ref1=ref1Data;
     if(ref2Data)match._ref2=ref2Data;
-    // Attempt to parse scout data for exact dig counts
-    match._scoutDigs=null;
-    if(pbpData){
-      const scoutStr=pbpData.full_scout||pbpData.scout||null;
-      if(scoutStr&&scoutStr!=='{}'){
-        match._scoutDigs=parseScoutDigs(typeof scoutStr==='string'?scoutStr:JSON.stringify(scoutStr));
-        if(match._scoutDigs)console.log('Scout dig counts parsed successfully',match._scoutDigs);
-        else console.log('Scout data present but unparseable — using summary API digs');
-      }
-    }
     curData=buildData(stats,match,mid,match._scoutDigs);
     render(curData);
     renderXml();
