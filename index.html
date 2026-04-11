@@ -850,6 +850,9 @@ function resolveCourtState(players,lineup,liberoJersey,servingJersey,isServingTe
 }
 
 // ── API fetch (direct first, proxy fallback) ──────────────────────────────────
+// useProxy: true = CORS blocked direct API, must use proxy
+// proxyDown: true = proxy also not reachable — stop trying until user action
+let proxyDown=false;
 async function vsGet(path){
   const tok=document.getElementById('tok').value.trim();
   if(!useProxy){
@@ -858,16 +861,36 @@ async function vsGet(path){
         headers:{'Authorization':`Token ${tok}`,'Accept':'application/json'},
         signal:AbortSignal.timeout(8000)
       });
-      if(r.ok){document.getElementById('cok').style.display='inline';return r.json();}
+      if(r.ok){
+        document.getElementById('cok').style.display='inline';
+        proxyDown=false;
+        return r.json();
+      }
       if(r.status===401)throw new Error('HTTP 401 \u2014 check your API token');
       if(r.status===404)throw new Error('HTTP 404 \u2014 match ID not found');
       throw new Error(`HTTP ${r.status}`);
-    }catch(e){if(e.message.includes('401')||e.message.includes('404'))throw e;useProxy=true;}
+    }catch(e){
+      if(e.message.includes('401')||e.message.includes('404'))throw e;
+      // CORS blocked — switch to proxy mode
+      useProxy=true;
+    }
   }
-  const r=await fetch(`${PROXY}/vs?path=${encodeURIComponent(path)}&token=${encodeURIComponent(tok)}`,
-    {signal:AbortSignal.timeout(8000)});
-  if(!r.ok){const t=await r.text().catch(()=>'');throw new Error(`Proxy: HTTP ${r.status} ${t.slice(0,80)}`);}
-  return r.json();
+  // If proxy is known down, throw immediately without a network attempt
+  if(proxyDown)throw new Error('Proxy not running \u2014 start node proxy.js or check CORS');
+  try{
+    const r=await fetch(`${PROXY}/vs?path=${encodeURIComponent(path)}&token=${encodeURIComponent(tok)}`,
+      {signal:AbortSignal.timeout(4000)});
+    if(!r.ok){const t=await r.text().catch(()=>'');throw new Error(`Proxy: HTTP ${r.status} ${t.slice(0,80)}`);}
+    proxyDown=false;
+    return r.json();
+  }catch(e){
+    // Mark proxy as down so subsequent calls in this poll cycle skip it
+    if(e.message.includes('Failed to fetch')||e.message.includes('ERR_CONNECTION_REFUSED')||e.message.includes('NetworkError')||e.name==='TypeError'){
+      proxyDown=true;
+      throw new Error('Proxy not running \u2014 start node proxy.js locally');
+    }
+    throw e;
+  }
 }
 
 // ── Parse play-by-play scout data for exact dig counts ───────────────────────
@@ -927,11 +950,12 @@ async function fetchAndRender(){
   const mid=getMid();if(!mid)return;
   try{
     setSt('loading','Fetching\u2026');
+    proxyDown=false; // reset each cycle so proxy gets a fresh chance if it was started
     const[stats,match]=await Promise.all([
       vsGet(`match-stats-summary/${mid}`),
       vsGet(`Matches/${mid}?show_timer=1`)
     ]);
-    // Fetch hall, referee, and play-by-play data in parallel
+    // Fetch hall, referee, and play-by-play data in parallel — all optional, silent on failure
     let hallData=null,ref1Data=null,ref2Data=null,pbpData=null;
     try{
       const extras=await Promise.allSettled([
@@ -944,7 +968,7 @@ async function fetchAndRender(){
       ref1Data=extras[1].status==='fulfilled'?extras[1].value:null;
       ref2Data=extras[2].status==='fulfilled'?extras[2].value:null;
       pbpData =extras[3].status==='fulfilled'?extras[3].value:null;
-    }catch(e){/* optional enrichment — don't fail core fetch */}
+    }catch(e){/* enrichment optional */}
     if(hallData)match._hall=hallData;
     if(ref1Data)match._ref1=ref1Data;
     if(ref2Data)match._ref2=ref2Data;
