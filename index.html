@@ -799,10 +799,10 @@ function normP(raw){
     // Digs = all in-play effects: # + ! / - but NOT = (error means ball hit floor)
     digs:{total:(()=>{
       const d=s['D']||{},f=s['F']||{};
-      // D: count # (in-system all options), + (in-system limited), ! (undefined/playable)
-      // Exclude D/ (overpass - goes back over) and D- (out-of-system) and D= (error)
-      const dCount=['#','+','!'].reduce((a,k)=>a+(Number(d[k])||0),0);
-      // F (freeball): count # (perfect) and + (good) only
+      // D: # (in-system all options), + (in-system limited), ! (undefined/playable), / (overpass)
+      // Exclude only D- (out-of-system) and D= (error) — VS does not count these as digs
+      const dCount=['#','+','!','/'].reduce((a,k)=>a+(Number(d[k])||0),0);
+      // F (freeball): count # and + only (in-system touches)
       const fCount=['#','+'].reduce((a,k)=>a+(Number(f[k])||0),0);
       return dCount+fCount;
     })()},
