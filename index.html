@@ -870,6 +870,58 @@ async function vsGet(path){
   return r.json();
 }
 
+// ── Parse play-by-play scout data for exact dig counts ───────────────────────
+// The scout format is VS's proprietary coding string. Each play is a code like:
+// *10DH26#  = home player #10, dig, high, zone 2→6, kill effect
+// We parse D and F skill codes per player to get VS-exact dig counts.
+function parseScoutDigs(scoutStr){
+  // Returns {home:{jersey:count,...}, away:{jersey:count,...}} or null if unparseable
+  if(!scoutStr||scoutStr==='{}'||scoutStr.length<10)return null;
+  try{
+    // VS scout format: each play on a new line or separated by \n
+    // Player prefix: * = home, a = away, followed by jersey number
+    // Skill code: D (dig) or F (freeball/skS)
+    // Effect: # + ! / - =
+    // VS counts as a dig: D# D+ D! D/ + F# F+ (confirmed from matching)
+    const digEffects=new Set(['#','+','!','/']);
+    const fDigEffects=new Set(['#','+']);
+    const result={home:{},away:{}};
+    
+    // Try to parse as JSON first (full_scout may be structured)
+    let lines=[];
+    try{
+      const parsed=JSON.parse(scoutStr);
+      // If it's an object/array with plays, extract the code strings
+      if(Array.isArray(parsed))lines=parsed.map(p=>typeof p==='string'?p:p.code||p.text||'');
+      else if(typeof parsed==='object')lines=Object.values(parsed).flat().map(p=>typeof p==='string'?p:'');
+    }catch{
+      // Not JSON — treat as raw VS code string, split on whitespace/newlines
+      lines=scoutStr.split(/[\n\r\s]+/).filter(l=>l.length>2);
+    }
+    
+    let found=false;
+    lines.forEach(code=>{
+      if(!code||code.length<3)return;
+      // Pattern: (*|a)(jersey)(skill)(type)(zones)(effect)
+      // * = home team, a = away team
+      const m=code.match(/^([*a])(\d{1,2})([DSRAEDBF])([A-Z]?)(\d{0,4})([#+!\\/\-=])/);
+      if(!m)return;
+      const [,team,jersey,,,,effect]=m;
+      const skill=m[3];
+      const side=team==='*'?'home':'away';
+      const j=String(parseInt(jersey));
+      if(!result[side][j])result[side][j]=0;
+      if(skill==='D'&&digEffects.has(effect)){result[side][j]++;found=true;}
+      if(skill==='F'&&fDigEffects.has(effect)){result[side][j]++;found=true;}
+    });
+    
+    return found?result:null;
+  }catch(e){
+    console.warn('Scout parse error:',e);
+    return null;
+  }
+}
+
 // ── Main fetch & render ───────────────────────────────────────────────────────
 async function fetchAndRender(){
   const mid=getMid();if(!mid)return;
@@ -879,17 +931,34 @@ async function fetchAndRender(){
       vsGet(`match-stats-summary/${mid}`),
       vsGet(`Matches/${mid}?show_timer=1`)
     ]);
-    // Fetch hall and referee data to enrich XML venue/officials fields
-    let hallData=null,ref1Data=null,ref2Data=null;
+    // Fetch hall, referee, and play-by-play data in parallel
+    let hallData=null,ref1Data=null,ref2Data=null,pbpData=null;
     try{
-      if(match.Hall_ID)hallData=await vsGet(`Halls/${match.Hall_ID}/`);
-      if(match.Referee1_ID)ref1Data=await vsGet(`Referees/${match.Referee1_ID}/`);
-      if(match.Referee2_ID)ref2Data=await vsGet(`Referees/${match.Referee2_ID}/`);
-    }catch(e){/* venue/ref data optional — don't fail if unavailable */}
-    if(hallData){match._hall=hallData;}
+      const extras=await Promise.allSettled([
+        match.Hall_ID?vsGet(`Halls/${match.Hall_ID}/`):Promise.resolve(null),
+        match.Referee1_ID?vsGet(`Referees/${match.Referee1_ID}/`):Promise.resolve(null),
+        match.Referee2_ID?vsGet(`Referees/${match.Referee2_ID}/`):Promise.resolve(null),
+        vsGet(`play-by-play-data/${mid}/`)
+      ]);
+      hallData=extras[0].status==='fulfilled'?extras[0].value:null;
+      ref1Data=extras[1].status==='fulfilled'?extras[1].value:null;
+      ref2Data=extras[2].status==='fulfilled'?extras[2].value:null;
+      pbpData =extras[3].status==='fulfilled'?extras[3].value:null;
+    }catch(e){/* optional enrichment — don't fail core fetch */}
+    if(hallData)match._hall=hallData;
     if(ref1Data)match._ref1=ref1Data;
     if(ref2Data)match._ref2=ref2Data;
-    curData=buildData(stats,match,mid);
+    // Attempt to parse scout data for exact dig counts
+    match._scoutDigs=null;
+    if(pbpData){
+      const scoutStr=pbpData.full_scout||pbpData.scout||null;
+      if(scoutStr&&scoutStr!=='{}'){
+        match._scoutDigs=parseScoutDigs(typeof scoutStr==='string'?scoutStr:JSON.stringify(scoutStr));
+        if(match._scoutDigs)console.log('Scout dig counts parsed successfully',match._scoutDigs);
+        else console.log('Scout data present but unparseable — using summary API digs');
+      }
+    }
+    curData=buildData(stats,match,mid,match._scoutDigs);
     render(curData);
     renderXml();
     await autoSave(false);  // auto-save on every update, skip if unchanged
@@ -899,12 +968,26 @@ async function fetchAndRender(){
   }catch(e){setSt('err','Error');showErr(e);}
 }
 
-function buildData(stats,match,mid){
+function buildData(stats,match,mid,scoutDigs){
   const ht=match.HomeTeam||stats.home?.team?.name||'Home';
   const at=match.GuestTeam||stats.away?.team?.name||'Away';
   const sets=[];
   for(let i=1;i<=5;i++){const h=match[`Set${i}Home`]??0,a=match[`Set${i}Guest`]??0;if(h>0||a>0)sets.push({home:h,away:a});}
   const w=match.widget||{};
+  const homePlayers=(stats.home?.players||[]).map(normP);
+  const awayPlayers=(stats.away?.players||[]).map(normP);
+  // If play-by-play scout data was parsed successfully, override dig counts
+  // with exact values from the raw scout file — eliminates remaining ±1-3 variance
+  if(scoutDigs){
+    homePlayers.forEach(p=>{
+      const d=scoutDigs.home?.[String(p.jersey)];
+      if(d!==undefined){p.digs={total:d};p._digsFromScout=true;}
+    });
+    awayPlayers.forEach(p=>{
+      const d=scoutDigs.away?.[String(p.jersey)];
+      if(d!==undefined){p.digs={total:d};p._digsFromScout=true;}
+    });
+  }
   const homePlayers=(stats.home?.players||[]).map(normP);
   const awayPlayers=(stats.away?.players||[]).map(normP);
   // Resolve duplicate shirt names within each team before any rendering or XML output.
