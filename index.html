@@ -935,44 +935,23 @@ async function fetchAndRender(){
       vsGet(`match-stats-summary/${mid}`),
       vsGet(`Matches/${mid}?show_timer=1`)
     ]);
-    // Fetch hall, referee, and play-by-play data in parallel — all optional
-    let hallData=null,ref1Data=null,ref2Data=null,pbpData=null;
+    // Fetch hall and referee data in parallel — optional, silent on failure
+    // Note: play-by-play endpoint (/play-by-play-data/) returns 403 with the
+    // current token — access not granted. Parser is built and ready; if access
+    // is granted in future it will automatically activate. Disabled to prevent
+    // repeated 403 errors every poll cycle.
+    let hallData=null,ref1Data=null,ref2Data=null;
     try{
       const extras=await Promise.allSettled([
         match.Hall_ID?vsGet(`Halls/${match.Hall_ID}/`):Promise.resolve(null),
         match.Referee1_ID?vsGet(`Referees/${match.Referee1_ID}/`):Promise.resolve(null),
         match.Referee2_ID?vsGet(`Referees/${match.Referee2_ID}/`):Promise.resolve(null),
-        vsGet(`play-by-play-data/${mid}/`)
       ]);
       hallData=extras[0].status==='fulfilled'?extras[0].value:null;
       ref1Data=extras[1].status==='fulfilled'?extras[1].value:null;
       ref2Data=extras[2].status==='fulfilled'?extras[2].value:null;
-      pbpData =extras[3].status==='fulfilled'?extras[3].value:null;
-      if(extras[3].status==='rejected') console.log('PBP endpoint error:',extras[3].reason?.message||extras[3].reason);
     }catch(e){/* enrichment optional */}
-    // Play-by-play scout parsing for exact dig counts
-    match._scoutDigs=null;
-    if(pbpData){
-      console.log('PBP keys:',Object.keys(pbpData));
-      const scoutStr=pbpData.full_scout||pbpData.scout||null;
-      console.log('full_scout type:',typeof pbpData.full_scout,'length:',String(pbpData.full_scout||'').length);
-      console.log('scout type:',typeof pbpData.scout,'length:',String(pbpData.scout||'').length);
-      console.log('full_scout sample:',String(pbpData.full_scout||'').slice(0,300));
-      if(scoutStr&&scoutStr!=='{}'&&scoutStr!=='""'&&scoutStr!='null'&&String(scoutStr).length>10){
-        match._scoutDigs=parseScoutDigs(typeof scoutStr==='string'?scoutStr:JSON.stringify(scoutStr));
-        if(match._scoutDigs){
-          const ht=Object.values(match._scoutDigs.home).reduce((a,b)=>a+b,0);
-          const at=Object.values(match._scoutDigs.away).reduce((a,b)=>a+b,0);
-          console.log(`Scout digs parsed ✓  home=${ht} away=${at}`,match._scoutDigs);
-        } else {
-          console.log('Scout present but pattern unmatched — raw:',String(scoutStr).slice(0,400));
-        }
-      } else {
-        console.log('PBP returned empty scout — using summary API digs');
-      }
-    } else {
-      console.log('PBP endpoint unavailable — using summary API digs');
-    }
+    match._scoutDigs=null; // PBP disabled — 403 with current token
     if(hallData)match._hall=hallData;
     if(ref1Data)match._ref1=ref1Data;
     if(ref2Data)match._ref2=ref2Data;
