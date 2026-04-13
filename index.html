@@ -792,18 +792,14 @@ function normP(raw){
     errors:{total:err.total??0},
     serve:{total:skS(s,'S'),aces:sk(s,'S','#'),errors:sk(s,'S','='),eff:e.S??''},
     reception:{total:skS(s,'R'),errors:sk(s,'R','='),perfect:sk(s,'R','#'),pos_pct:pct2.R?.['#+']??'',perf_pct:pct2.R?.['#']??''},
-    attack:{total:skS(s,'A'),kills:sk(s,'A','#'),errors:sk(s,'A','='),pct:e.A??''},
+    // Attack errors = A= (into net/out) + A/ (blocked for point) — MLV counts blocked attacks as errors
+    attack:{total:skS(s,'A'),kills:sk(s,'A','#'),errors:sk(s,'A','=')+sk(s,'A','/'),pct:e.A??''},
     block:{points:sk(s,'B','#'),errors:sk(s,'B','=')},
-    // FIX: sum ALL dig effects not just D# (perfect digs)
-    // Digs = all in-play effects: # + ! / - but NOT = (error means ball hit floor)
+    // Digs = D skill only: D# D+ D! D/ (all in-play touches)
+    // Exclude D- (out-of-system) and D= (error) — no freeball F skill
     digs:{total:(()=>{
-      const d=s['D']||{},f=s['F']||{};
-      // D: # (in-system all options), + (in-system limited), ! (undefined/playable), / (overpass)
-      // Exclude only D- (out-of-system) and D= (error) — VS does not count these as digs
-      const dCount=['#','+','!','/'].reduce((a,k)=>a+(Number(d[k])||0),0);
-      // F (freeball): count # and + only (in-system touches)
-      const fCount=['#','+'].reduce((a,k)=>a+(Number(f[k])||0),0);
-      return dCount+fCount;
+      const d=s['D']||{};
+      return['#','+','!','/'].reduce((a,k)=>a+(Number(d[k])||0),0);
     })()},
     assists:t.assists??0,
     onCourt:false,courtZone:0,isLibero:false,isServing:false,
